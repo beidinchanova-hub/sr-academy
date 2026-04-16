@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Restaurant — Sales Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#1D9E75;--gl:#E1F5EE;--gd:#0F6E56;--gdp:#04342C;
+  --a:#EF9F27;--al:#FAEEDA;
+  --r:#E24B4A;--rl:#FCEBEB;
+  --b:#378ADD;--bl:#E6F1FB;
+  --gray50:#F8F8F6;--gray100:#F0EFE8;--gray200:#D3D1C7;
+  --gray400:#888780;--gray700:#444441;--gray900:#1A1A18;
+  --text:#1A1A18;--muted:#66665F;--hint:#99998F;
+  --bdr:rgba(0,0,0,0.1);--rad:12px;--radsm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',sans-serif;background:var(--gray50);color:var(--text);min-height:100vh;}
+
+/* NAV */
+.nav{background:var(--gray900);padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;}
+.nav-logo{font-family:'Unbounded',sans-serif;font-size:12px;color:#fff;letter-spacing:.5px;}
+.nav-logo span{color:var(--g);}
+.nav-steps{display:flex;gap:4px;}
+.ns{font-size:11px;color:var(--gray400);padding:4px 10px;border-radius:20px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.ns.active{background:var(--g);color:#fff;}
+.ns.done{color:#9FE1CB;}
+.ns.locked{opacity:.35;cursor:default;}
+
+/* SCREENS */
+.screen{display:none;} .screen.on{display:block;}
+
+/* WELCOME */
+.hero{background:var(--gray900);padding:48px 20px 64px;text-align:center;}
+.badge{display:inline-block;background:rgba(29,158,117,.2);color:#9FE1CB;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:18px;}
+.hero h1{font-family:'Unbounded',sans-serif;font-size:clamp(20px,5vw,36px);color:#fff;line-height:1.25;margin-bottom:14px;}
+.hero h1 span{color:var(--g);}
+.hero p{color:var(--gray400);font-size:14px;max-width:460px;margin:0 auto 28px;line-height:1.7;}
+.hero-cards{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;max-width:580px;margin:0 auto 32px;}
+.hc{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--rad);padding:14px 16px;flex:1;min-width:150px;text-align:left;}
+.hc-n{font-family:'Unbounded',sans-serif;font-size:20px;color:var(--g);margin-bottom:4px;}
+.hc-t{font-size:12px;font-weight:600;color:#fff;margin-bottom:3px;}
+.hc-d{font-size:11px;color:var(--gray400);line-height:1.5;}
+
+/* NAME INPUT */
+.name-box{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:var(--rad);padding:20px;max-width:380px;margin:0 auto 24px;}
+.name-box label{display:block;font-size:12px;color:var(--gray400);margin-bottom:8px;}
+.name-box input{width:100%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--radsm);padding:10px 14px;font-size:14px;color:#fff;outline:none;}
+.name-box input::placeholder{color:rgba(255,255,255,.3);}
+.name-box input:focus{border-color:var(--g);}
+.btn-start{background:var(--g);color:#fff;border:none;border-radius:var(--rad);padding:14px 36px;font-family:'Unbounded',sans-serif;font-size:12px;cursor:pointer;transition:background .2s;}
+.btn-start:hover{background:var(--gd);}
+.btn-start:disabled{background:var(--gray400);cursor:default;}
+
+/* QUIZ */
+.qwrap{max-width:660px;margin:0 auto;padding:28px 16px 60px;}
+.qhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.qtitle{font-family:'Unbounded',sans-serif;font-size:13px;}
+.qctr{font-size:12px;color:var(--muted);}
+.pbar{height:4px;background:var(--gray200);border-radius:2px;margin-bottom:28px;overflow:hidden;}
+.pfill{height:100%;background:var(--g);border-radius:2px;transition:width .4s ease;}
+.qcard{background:#fff;border:1px solid var(--bdr);border-radius:var(--rad);padding:24px;margin-bottom:14px;}
+.qnum{font-size:11px;font-weight:600;color:var(--g);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;}
+.qtext{font-size:16px;font-weight:500;line-height:1.5;margin-bottom:20px;}
+.choices{display:flex;flex-direction:column;gap:8px;}
+.cbtn{background:var(--gray50);border:1.5px solid var(--bdr);border-radius:var(--radsm);padding:12px 16px;text-align:left;font-size:13px;cursor:pointer;transition:all .18s;line-height:1.5;color:var(--text);}
+.cbtn:hover:not(:disabled){border-color:var(--g);background:var(--gl);}
+.cbtn.ok{background:var(--gl);border-color:var(--g);color:var(--gdp);}
+.cbtn.fail{background:var(--rl);border-color:var(--r);color:#7a1414;}
+.cbtn:disabled{cursor:default;}
+.fbbox{border-radius:var(--radsm);padding:12px 16px;font-size:13px;line-height:1.6;margin-top:12px;display:none;}
+.fbbox.ok{background:var(--gl);color:var(--gd);border-left:3px solid var(--g);border-radius:0 var(--radsm) var(--radsm) 0;}
+.fbbox.fail{background:var(--rl);color:#993535;border-left:3px solid var(--r);border-radius:0 var(--radsm) var(--radsm) 0;}
+.btn-next{background:var(--text);color:#fff;border:none;border-radius:var(--radsm);padding:11px 24px;font-size:13px;font-weight:500;cursor:pointer;margin-top:16px;display:none;transition:background .2s;}
+.btn-next:hover{background:var(--gray700);}
+
+/* SEGMENT QUIZ */
+.seg-intro{background:#fff;border:1px solid var(--bdr);border-radius:var(--rad);padding:20px;margin-bottom:16px;}
+.seg-intro h3{font-size:15px;font-weight:600;margin-bottom:6px;}
+.seg-intro p{font-size:13px;color:var(--muted);line-height:1.6;}
+.seg-tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;margin-right:6px;margin-bottom:4px;}
+.tag-s{background:var(--bl);color:#185FA5;}
+.tag-p{background:var(--al);color:#854F0B;}
+.tag-i{background:var(--rl);color:#A32D2D;}
+.tag-n{background:var(--gl);color:var(--gd);}
+
+/* RESULT */
+.result{max-width:520px;margin:0 auto;padding:44px 16px 60px;text-align:center;}
+.trophy{font-size:52px;margin-bottom:14px;}
+.rgrade{font-family:'Unbounded',sans-serif;font-size:20px;margin-bottom:6px;}
+.rpct{font-size:48px;font-weight:700;color:var(--g);line-height:1;margin-bottom:4px;}
+.rlbl{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.radv{background:var(--gl);border-left:3px solid var(--g);padding:12px 16px;border-radius:0 var(--radsm) var(--radsm) 0;font-size:13px;color:var(--gdp);text-align:left;margin-bottom:20px;line-height:1.6;}
+.rgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px;}
+.ri{background:var(--gray100);border-radius:var(--radsm);padding:12px;text-align:left;}
+.ri-l{font-size:11px;color:var(--hint);margin-bottom:3px;}
+.ri-v{font-size:19px;font-weight:600;}
+.btn-r{border:1.5px solid var(--bdr);background:transparent;border-radius:var(--radsm);padding:11px 22px;font-size:13px;cursor:pointer;margin-right:8px;transition:background .2s;color:var(--text);}
+.btn-r:hover{background:var(--gray100);}
+.btn-nm{background:var(--g);color:#fff;border:none;border-radius:var(--radsm);padding:11px 22px;font-size:13px;font-weight:500;cursor:pointer;transition:background .2s;}
+.btn-nm:hover{background:var(--gd);}
+
+/* ROLEPLAY */
+.rpwrap{max-width:660px;margin:0 auto;padding:28px 16px 60px;}
+.rptop{margin-bottom:20px;}
+.rptop h2{font-family:'Unbounded',sans-serif;font-size:17px;margin-bottom:5px;}
+.rptop p{font-size:13px;color:var(--muted);line-height:1.6;}
+.rp-sbar{display:flex;gap:5px;margin-bottom:5px;}
+.rsb{flex:1;height:3px;border-radius:2px;background:var(--gray200);transition:background .4s;}
+.rsb.act{background:var(--g);}
+.rsb.done{background:#9FE1CB;}
+.rslbls{display:flex;gap:5px;margin-bottom:18px;}
+.rsl{flex:1;font-size:10px;color:var(--hint);text-align:center;}
+.rsl.act{color:var(--gd);font-weight:600;}
+.pbar2{display:flex;gap:10px;align-items:center;background:#fff;border:1px solid var(--bdr);border-radius:var(--rad);padding:12px 16px;margin-bottom:14px;}
+.pav{width:40px;height:40px;border-radius:50%;background:var(--gl);color:var(--gd);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pname{font-size:13px;font-weight:500;}
+.prole{font-size:11px;color:var(--muted);}
+.pmood{margin-left:auto;font-size:11px;padding:3px 9px;border-radius:20px;background:var(--al);color:#854F0B;font-weight:500;white-space:nowrap;}
+.pmood.warm{background:var(--gl);color:var(--gd);}
+.pmood.cold{background:var(--rl);color:#993535;}
+.chatbox{background:#fff;border:1px solid var(--bdr);border-radius:var(--rad);overflow:hidden;margin-bottom:10px;}
+.chatmsgs{min-height:160px;max-height:360px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.cm{display:flex;flex-direction:column;max-width:88%;}
+.cm.partner{align-self:flex-start;}
+.cm.sales{align-self:flex-end;}
+.cm-who{font-size:10px;color:var(--hint);margin-bottom:3px;}
+.cm.sales .cm-who{text-align:right;}
+.cm-bbl{padding:10px 14px;font-size:13px;line-height:1.6;border-radius:4px 14px 14px 14px;}
+.cm.partner .cm-bbl{background:var(--gray50);border:1px solid var(--bdr);color:var(--text);}
+.cm.sales .cm-bbl{background:var(--gray900);color:#fff;border-radius:14px 4px 14px 14px;}
+.cm-tip{font-size:11px;color:var(--gd);margin-top:4px;font-style:italic;padding:5px 9px;background:var(--gl);border-radius:var(--radsm);}
+.cm-tip.bad{background:var(--al);color:#854F0B;}
+.typing{align-self:flex-start;display:flex;align-items:center;gap:5px;padding:10px 13px;background:var(--gray50);border:1px solid var(--bdr);border-radius:4px 14px 14px 14px;}
+.td{width:5px;height:5px;border-radius:50%;background:var(--gray400);animation:tdot 1s infinite;}
+.td:nth-child(2){animation-delay:.15s;} .td:nth-child(3){animation-delay:.3s;}
+@keyframes tdot{0%,80%,100%{transform:scale(.7);opacity:.5;}40%{transform:scale(1);opacity:1;}}
+.cpanel{padding:12px 14px;border-top:1px solid var(--bdr);background:var(--gray50);}
+.cplbl{font-size:10px;color:var(--hint);margin-bottom:8px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;}
+.rpchoice{display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;border:1.5px solid var(--bdr);border-radius:var(--radsm);background:#fff;font-size:12px;cursor:pointer;line-height:1.5;transition:all .16s;color:var(--text);}
+.rpchoice:hover{border-color:var(--g);background:var(--gl);}
+.rpchoice:last-child{margin-bottom:0;}
+.rct{display:inline-block;font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:3px;margin-right:5px;vertical-align:middle;}
+.rct.S{background:var(--bl);color:#185FA5;}
+.rct.P{background:var(--al);color:#854F0B;}
+.rct.I{background:var(--rl);color:#A32D2D;}
+.rct.N{background:var(--gl);color:var(--gd);}
+.rct.X{background:var(--gray100);color:var(--gray400);}
+
+/* SAVING */
+.saving{max-width:520px;margin:0 auto;padding:80px 16px;text-align:center;}
+.saving-spin{width:40px;height:40px;border:3px solid var(--gray200);border-top:3px solid var(--g);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.saving p{font-size:14px;color:var(--muted);}
+
+/* FINAL */
+.final{max-width:580px;margin:0 auto;padding:56px 16px 80px;text-align:center;}
+.fstar{font-size:60px;margin-bottom:16px;}
+.ftitle{font-family:'Unbounded',sans-serif;font-size:clamp(18px,4vw,26px);margin-bottom:6px;}
+.fsub{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.6;}
+.fscores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.fsi{background:#fff;border:1px solid var(--bdr);border-radius:var(--rad);padding:18px 10px;}
+.fsi-n{font-size:26px;font-weight:700;color:var(--g);}
+.fsi-l{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;}
+.sheet-link{display:inline-flex;align-items:center;gap:6px;background:var(--gl);color:var(--gd);text-decoration:none;border-radius:var(--radsm);padding:10px 18px;font-size:13px;font-weight:500;margin-bottom:20px;transition:background .2s;}
+.sheet-link:hover{background:#c5edd9;}
+.fbtn{background:var(--gray900);color:#fff;border:none;border-radius:var(--rad);padding:14px 36px;font-family:'Unbounded',sans-serif;font-size:12px;cursor:pointer;transition:background .2s;}
+.fbtn:hover{background:var(--gray700);}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">Smart<span>Restaurant</span> Academy</div>
+  <div class="nav-steps">
+    <div class="ns active" id="ns1">1. Продукты</div>
+    <div class="ns locked" id="ns2">2. Сегменты</div>
+    <div class="ns locked" id="ns3">3. Ролевая</div>
+  </div>
+</nav>
+
+<!-- WELCOME -->
+<div class="screen on" id="s-welcome">
+  <div class="hero">
+    <div class="badge">Sales Academy</div>
+    <h1>Продавай умнее.<br>Расти с <span>Smart Restaurant</span>.</h1>
+    <p>Три модуля — знание продуктов, понимание клиента и ролевая игра. Результаты сохраняются в таблицу для менеджера.</p>
+    <div class="hero-cards">
+      <div class="hc"><div class="hc-n">01</div><div class="hc-t">Тест по продуктам</div><div class="hc-d">10 вопросов: цифры, кейсы, ценности SR</div></div>
+      <div class="hc"><div class="hc-n">02</div><div class="hc-t">Тест по сегментам</div><div class="hc-d">Какой продукт для какого заведения</div></div>
+      <div class="hc"><div class="hc-n">03</div><div class="hc-t">Ролевая игра</div><div class="hc-d">Переговоры с ИИ-ресторатором по SPIN</div></div>
+    </div>
+    <div class="name-box">
+      <label>Ваше имя и фамилия</label>
+      <input type="text" id="nameInput" placeholder="Например: Айдана Сейткали" oninput="checkName()">
+    </div>
+    <button class="btn-start" id="btnStart" onclick="startAll()" disabled>Начать обучение →</button>
+  </div>
+</div>
+
+<!-- QUIZ 1 -->
+<div class="screen" id="s-quiz1">
+  <div class="qwrap">
+    <div class="qhead">
+      <div class="qtitle">Модуль 1 — Продукты SR</div>
+      <div class="qctr" id="q1ctr">1 / 10</div>
+    </div>
+    <div class="pbar"><div class="pfill" id="q1fill" style="width:10%"></div></div>
+    <div id="q1content"></div>
+  </div>
+</div>
+
+<!-- QUIZ 2 -->
+<div class="screen" id="s-quiz2">
+  <div class="qwrap">
+    <div class="qhead">
+      <div class="qtitle">Модуль 2 — Сегменты и продукты</div>
+      <div class="qctr" id="q2ctr">1 / 8</div>
+    </div>
+    <div class="pbar"><div class="pfill" id="q2fill" style="width:12%"></div></div>
+    <div id="q2content"></div>
+  </div>
+</div>
+
+<!-- ROLEPLAY -->
+<div class="screen" id="s-rp">
+  <div class="rpwrap">
+    <div class="rptop">
+      <h2>Модуль 3 — Ролевая игра</h2>
+      <p>Вы — сейлз Smart Restaurant. Ведите переговоры по методологии SPIN. Каждый выбор записывается.</p>
+    </div>
+    <div class="rp-sbar" id="rpsbar"></div>
+    <div class="rslbls" id="rpslbls"></div>
+    <div class="pbar2">
+      <div class="pav">АМ</div>
+      <div><div class="pname">Аскар Мамытов</div><div class="prole">Владелец кафе «Ноль градусов», Алматы</div></div>
+      <div class="pmood" id="pmood">Нейтрален</div>
+    </div>
+    <div class="chatbox">
+      <div class="chatmsgs" id="rpchat"></div>
+      <div class="cpanel" id="rpcpanel">
+        <div class="cplbl">Ваш ход</div>
+        <div id="rpchoices"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SAVING -->
+<div class="screen" id="s-saving">
+  <div class="saving">
+    <div class="saving-spin"></div>
+    <p>Сохраняем ваши результаты в таблицу...</p>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div class="screen" id="s-final">
+  <div class="final">
+    <div class="fstar" id="fstar">🏆</div>
+    <div class="ftitle" id="ftitle"></div>
+    <div class="fsub">Вы завершили все три модуля Smart Restaurant Sales Academy.<br>Результаты сохранены в таблицу менеджера.</div>
+    <div class="fscores" id="fscores"></div>
+    <div id="fsheetlink"></div>
+    <div id="fadv" style="background:var(--gl);border-left:3px solid var(--g);padding:12px 16px;border-radius:0 8px 8px 0;font-size:13px;color:var(--gdp);text-align:left;margin-bottom:24px;line-height:1.6;"></div>
+    <button class="fbtn" onclick="restartAll()">Пройти заново ↺</button>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// DATA
+// =====================================================================
+
+var Q1 = [
+  {q:'На сколько процентов увеличивается средний чек при использовании «Заказ без кассира» (QR-заказ)?',
+   ch:['10%','16%','20%','30%'],c:1,
+   ok:'Верно! QR-заказ анализирует предпочтения и предлагает допзаказы — рост среднего чека 16%.',
+   fail:'Неверно. Правильный ответ: 16%. Именно такой рост даёт анализ предпочтений в QR-заказе.'},
+  {q:'На сколько минут сокращается время обслуживания с «Заказ без официанта»?',
+   ch:['5 минут','10 минут','15 минут','20 минут'],c:2,
+   ok:'Верно! Время обслуживания сокращается на 15 минут — гость не ждёт официанта.',
+   fail:'Неверно. Правильный ответ: 15 минут.'},
+  {q:'На сколько процентов вырастает оборачиваемость столов при «Заказ без официанта»?',
+   ch:['+10%','+20%','+30%','+50%'],c:2,
+   ok:'Верно! Оборачиваемость столов растёт на 30%.',
+   fail:'Неверно. Правильный ответ: +30%.'},
+  {q:'Какая комиссия за обслуживание у «Заказ без официанта»?',
+   ch:['5%','10%','0%','Фиксированная плата'],c:2,
+   ok:'Верно! Комиссия 0% — ключевая ценность продукта.',
+   fail:'Неверно. Комиссия за обслуживание равна 0%.'},
+  {q:'Что такое «Автоподтягивание» в Smart Restaurant?',
+   ch:['Автонайм персонала','Гость сам оплачивает и оставляет чаевые без ожидания','Автопополнение меню','Интеграция с агрегаторами'],c:1,
+   ok:'Верно! Автоподтягивание — самостоятельная оплата и чаевые, ускоряет расчёт.',
+   fail:'Неверно. Автоподтягивание — гость сам оплачивает счёт без ожидания официанта.'},
+  {q:'Какие три курьерские службы интегрированы в SR Delivery?',
+   ch:['Glovo, Yandex, Choco','Yandex Доставка, Wolt Drive, Choco Доставка','Только Wolt Drive','Bolt, Yandex, Wolt'],c:1,
+   ok:'Верно! Yandex Доставка, Wolt Drive и Choco Доставка.',
+   fail:'Неверно. Правильный ответ: Yandex Доставка, Wolt Drive и Choco Доставка.'},
+  {q:'Сколько дополнительно зарабатывает ресторан (200 заказов/мес) при переходе на SR Delivery?',
+   ch:['100 000 тг','160 000 тг','260 000 тг','400 000 тг'],c:2,
+   ok:'Верно! Через агрегатора 700 000 тг, через SR Delivery 940 000 тг. Разница = 260 000 тг.',
+   fail:'Неверно. Разница составляет 260 000 тг (700К против 940К).'},
+  {q:'На чём строится сегментация гостей в программе лояльности Smart Restaurant?',
+   ch:['По возрасту и полу','По типу блюд','По частоте визитов и сумме трат','По геолокации'],c:2,
+   ok:'Верно! Сегментация по частоте визитов и сумме трат.',
+   fail:'Неверно. Сегментация по частоте посещений и сумме трат.'},
+  {q:'Какой результат кейса Bahandi с киосками самообслуживания?',
+   ch:['Конверсия 50%, чек +30%','Конверсия 86,4%, чек +63%','Конверсия 70%, чек +40%','Конверсия 95%, чек +20%'],c:1,
+   ok:'Верно! Конверсия 86,4%, допродажи увеличивают чек на 63%.',
+   fail:'Неверно. Правильный ответ: конверсия 86,4%, рост чека 63%.'},
+  {q:'Что такое Guest 360?',
+   ch:['CRM для сотрудников','Платформа для роста выручки, удержания гостей и управления репутацией','Приложение доставки','Система учёта рабочего времени'],c:1,
+   ok:'Верно! Guest 360 — история заказов, триггерные рассылки и AI-обработка отзывов.',
+   fail:'Неверно. Guest 360 — платформа для роста выручки, удержания гостей и управления репутацией.'}
+];
+
+var Q2 = [
+  {seg:'Кофейня / Кафе',
+   q:'Владелец кофейни жалуется на очередь у кассы в утренний час пик. Какой продукт SR решает эту проблему напрямую?',
+   ch:['SR Delivery','Заказ без кассира (QR-заказ)','Guest 360','Программа лояльности'],c:1,
+   ok:'Верно! QR-заказ убирает очередь — гость заказывает со своего телефона за 30 секунд.',
+   fail:'Неверно. Заказ без кассира (QR-заказ) напрямую снимает проблему очереди в кофейне.'},
+  {seg:'Кофейня / Кафе',
+   q:'Какой SPIN-вопрос уместен на этапе Implication (I) при продаже кофейне?',
+   ch:['"Сколько у вас посадочных мест?"','"Если 10 гостей уходят из очереди ежедневно — сколько теряете в месяц?"','"Хотите внедрить наш продукт?"','"Есть ли у вас программа лояльности?"'],c:1,
+   ok:'Верно! Implication-вопрос переводит проблему в деньги — партнёр считает сам и убеждается.',
+   fail:'Неверно. Implication — это вопрос о последствиях и потерях: "Сколько вы теряете из-за этого?"'},
+  {seg:'Фастфуд / QSR',
+   q:'Что является главной болью фастфуда / QSR при выборе продукта SR?',
+   ch:['Нет программы лояльности','Высокий поток, очереди, низкий средний чек','Плохое меню','Нет доставки'],c:1,
+   ok:'Верно! Для QSR критичны поток, скорость и рост среднего чека.',
+   fail:'Неверно. Главная боль QSR — высокий поток, очереди и низкий средний чек.'},
+  {seg:'Фастфуд / QSR',
+   q:'Какой продукт SR показал конверсию 86,4% и рост чека на 63% в реальном кейсе для QSR?',
+   ch:['SR Delivery','Программа лояльности','Киоск самообслуживания','Guest 360'],c:2,
+   ok:'Верно! Кейс Bahandi: киоск самообслуживания, конверсия 86,4%, допродажи +63% к чеку.',
+   fail:'Неверно. Правильный ответ: Киоск самообслуживания. Кейс Bahandi: конверсия 86,4%, чек +63%.'},
+  {seg:'Ресторан (полный сервис)',
+   q:'Ресторан среднего сегмента жалуется на негативные отзывы и нет повторных визитов. Какой продукт SR подойдёт?',
+   ch:['Заказ без кассира','SR Delivery','Guest 360','App Clip'],c:2,
+   ok:'Верно! Guest 360 — CRM + AI-обработка отзывов + триггерные рассылки для возврата гостей.',
+   fail:'Неверно. Guest 360 объединяет управление репутацией и инструменты удержания гостей.'},
+  {seg:'Ресторан (полный сервис)',
+   q:'На каком этапе SPIN уместно говорить про влияние негативных отзывов на поток гостей?',
+   ch:['S — Situation','P — Problem','I — Implication','N — Need-Payoff'],c:2,
+   ok:'Верно! Implication — вы показываете последствия: один отзыв видят сотни потенциальных гостей.',
+   fail:'Неверно. Это этап I — Implication: вы масштабируете последствия проблемы.'},
+  {seg:'Dark Kitchen / Доставка',
+   q:'Dark Kitchen работает через Wolt с комиссией 30%. Какой главный аргумент при продаже SR Delivery?',
+   ch:['Красивый интерфейс','Экономия на комиссии и умный подбор курьера','Бесплатное обслуживание','Интеграция с iiko'],c:1,
+   ok:'Верно! SR Delivery экономит на комиссии агрегатора и автоматически подбирает оптимального курьера.',
+   fail:'Неверно. Главный аргумент — экономия на комиссии (25-30%) и умный подбор курьера в реальном времени.'},
+  {seg:'Dark Kitchen / Доставка',
+   q:'Какой Problem (P) вопрос лучше всего открывает боль Dark Kitchen при первом разговоре?',
+   ch:['"У вас есть iiko?"','"Какая у вас комиссия на Wolt — и вас устраивает такая экономика?"','"Хотите больше заказов?"','"Вы знаете про SR Delivery?"'],c:1,
+   ok:'Верно! Вопрос про комиссию сразу обнажает финансовую боль — это сердце проблемы Dark Kitchen.',
+   fail:'Неверно. Problem-вопрос про комиссию сразу попадает в главную боль Dark Kitchen.'}
+];
+
+var RP_FLOW = [
+  {stage:0,partner:'Здравствуйте. Слушаю вас, у меня минут 10 — мы открываемся скоро.',mood:'neutral',
+   ch:[
+    {t:'S',text:'Понимаю, буду краток. Скажите — у вас сейчас как принимаются заказы? Через официантов или уже что-то автоматизировали?',score:3,tip:'Отлично! Ситуационный вопрос уважает время и даёт нужный контекст.',next:1},
+    {t:'S',text:'Сколько посадочных мест? И какая система стоит — iiko или другая?',score:2,tip:'Хорошо — собираете данные.',next:1},
+    {t:'X',text:'Отлично! Тогда сразу к делу — у нас продукты для ресторанов, которые увеличат ваш чек и оборот!',score:0,tip:'Без ситуации непонятно что именно нужно этому партнёру.',next:1}
+   ]},
+  {stage:0,partner:'Официанты. Кассу поставили год назад, iiko стоит. Работаем нормально.',mood:'neutral',
+   ch:[
+    {t:'S',text:'Сколько официантов в смену и сколько столов на одного в пиковые часы?',score:3,tip:'Правильно — уточняете нагрузку. Это мост к проблемному вопросу.',next:2},
+    {t:'P',text:'Понял. А в обед или вечером — официанты успевают, или бывает запара?',score:2,tip:'Чуть рано для Problem, но работает.',next:2},
+    {t:'X',text:'Здорово! Мы интегрируемся с iiko — это упростит работу!',score:0,tip:'Не торопитесь с интеграцией — партнёр ещё не видит в ней ценности.',next:2}
+   ]},
+  {stage:1,partner:'Пятеро официантов, каждый берёт 5–6 столов. Иногда в обед запара — минут 10–15 ждут первого заказа.',mood:'neutral',
+   ch:[
+    {t:'P',text:'10–15 минут ожидания — гости это замечают. Были жалобы или негативные отзывы из-за этого?',score:3,tip:'Отлично! Связываете факт с реальными последствиями.',next:3},
+    {t:'P',text:'В это ожидание официанты успевают предложить допзаказы — десерт, напитки?',score:2,tip:'Хорошо — нащупываете потерянную выручку.',next:3},
+    {t:'X',text:'Вот! Именно для этого наш «Заказ без официанта» — гость сам заказывает через QR!',score:0,tip:'Слишком рано. Партнёр не прочувствовал масштаб проблемы.',next:3}
+   ]},
+  {stage:1,partner:'Была пара отзывов в 2GIS про долгое обслуживание. Но в целом справляемся.',mood:'neutral',
+   ch:[
+    {t:'I',text:'Один отзыв в 2GIS видят сотни потенциальных гостей. Вы считали, сколько людей могли не прийти из-за этого?',score:3,tip:'Превосходно! Переходите к последствиям — это сильнее самой проблемы.',next:4},
+    {t:'I',text:'«Справляемся» — но сколько допзаказов теряется, когда официант занят и не предлагает десерт?',score:2,tip:'Хорошо — переводите потери в деньги.',next:4},
+    {t:'P',text:'А с доставкой — через агрегаторы работаете?',score:1,tip:'Упустили момент — партнёр признал боль, нужно было её углубить.',next:4}
+   ]},
+  {stage:2,partner:'Ну, возможно теряем... Не думал об этом в таких цифрах.',mood:'warming',
+   ch:[
+    {t:'I',text:'При 60 столах и потере одного допзаказа в день по 1500 тг — это 90 000 тг в месяц. Для вас это критично?',score:3,tip:'Блестяще! Конкретная цифра из его реальности убеждает лучше любой презентации.',next:5},
+    {t:'I',text:'Конкуренты уже внедряют QR-заказы. Гости привыкают к скорости и сравнивают.',score:2,tip:'Хороший угол — давление конкурентов.',next:5},
+    {t:'N',text:'Если бы это можно было решить — вам было бы интересно?',score:1,tip:'Немного рано для Need-Payoff.',next:5}
+   ]},
+  {stage:2,partner:'Цифры неприятные. Но может просто больше обучать персонал?',mood:'warming',
+   ch:[
+    {t:'I',text:'Обучение помогает, но не меняет физику: один официант и 5 столов. Что изменилось бы, если гость сам отправлял заказ?',score:3,tip:'Не спорите — переключаете фокус вопросом. Это SPIN.',next:6},
+    {t:'N',text:'Что для вас важнее: снизить нагрузку на персонал или увеличить выручку?',score:2,tip:'Партнёр называет приоритет — вы подстраиваете презентацию.',next:6},
+    {t:'X',text:'Обучение не поможет! Вам нужна технология, это очевидно.',score:0,tip:'Давление закрывает партнёра. Никогда не спорьте напрямую.',next:6}
+   ]},
+  {stage:3,partner:'Ладно, вы меня зацепили. Что именно вы предлагаете?',mood:'warm',
+   ch:[
+    {t:'N',text:'Прежде чем показать — что сейчас важнее: увеличить средний чек или ускорить оборот столов?',score:3,tip:'Идеально! Партнёр сам формулирует ценность — презентация попадёт точно в цель.',next:7},
+    {t:'N',text:'Представьте: официанты не принимают заказы — только подают и общаются. Как меняется нагрузка?',score:3,tip:'Блестяще! Партнёр визуализирует результат — самая сильная техника.',next:7},
+    {t:'X',text:'«Заказ без официанта» — QR на столе, гость заказывает сам, чек +16%, оборот +30%!',score:1,tip:'Неплохо, но вы не дали партнёру сформулировать ценность самому.',next:7}
+   ]},
+  {stage:3,partner:'Наверное важнее чтобы окупилось. У меня уже были неудачные внедрения.',mood:'warm',
+   ch:[
+    {t:'N',text:'Понимаю. При 60 столах и среднем чеке 3000 тг рост на 16% = 480 тг с чека. При 80 чеках в день — 38 400 тг ежедневно. Срок окупаемости виден сразу.',score:3,tip:'Превосходно! Считаете его цифрами, не абстрактными процентами.',next:8},
+    {t:'N',text:'Какой срок окупаемости был бы для вас комфортным — 3 месяца?',score:2,tip:'Хорошо — узнаёте его критерий успеха.',next:8},
+    {t:'X',text:'Не переживайте, наши клиенты всегда довольны!',score:0,tip:'Пустые слова без цифр не работают.',next:8}
+   ]},
+  {stage:4,partner:null,ch:[]}
+];
+
+// =====================================================================
+// STATE
+// =====================================================================
+var userName = '';
+var q1Idx=0, q1Score=0, q1Answered=false, q1Answers=[];
+var q2Idx=0, q2Score=0, q2Answered=false, q2Answers=[];
+var rpIdx=0, rpScore=0, rpMaxScore=0, rpSpinCounts={S:0,P:0,I:0,N:0}, rpAnswers=[];
+var sheetUrl='';
+
+// =====================================================================
+// NAV
+// =====================================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+}
+function setNav(active){
+  ['ns1','ns2','ns3'].forEach(function(id,i){
+    var el=document.getElementById(id);
+    el.className='ns'+(i+1<active?' done':i+1===active?' active':' locked');
+  });
+}
+function checkName(){
+  var v=document.getElementById('nameInput').value.trim();
+  document.getElementById('btnStart').disabled=v.length<2;
+}
+
+// =====================================================================
+// START
+// =====================================================================
+function startAll(){
+  userName=document.getElementById('nameInput').value.trim();
+  if(!userName) return;
+  q1Idx=0; q1Score=0; q1Answers=[];
+  showScreen('s-quiz1'); setNav(1);
+  renderQ1();
+}
+
+// =====================================================================
+// QUIZ 1
+// =====================================================================
+function renderQ1(){
+  var q=Q1[q1Idx];
+  q1Answered=false;
+  document.getElementById('q1ctr').textContent=(q1Idx+1)+' / '+Q1.length;
+  document.getElementById('q1fill').style.width=((q1Idx+1)/Q1.length*100)+'%';
+  var ch=q.ch.map(function(c,i){return '<button class="cbtn" onclick="ansQ1('+i+')">'+c+'</button>';}).join('');
+  document.getElementById('q1content').innerHTML='<div class="qcard"><div class="qnum">Вопрос '+(q1Idx+1)+'</div><div class="qtext">'+q.q+'</div><div class="choices">'+ch+'</div><div class="fbbox" id="fb1"></div></div><button class="btn-next" id="bn1" onclick="nextQ1()">'+(q1Idx<Q1.length-1?'Следующий →':'Завершить модуль →')+'</button>';
+}
+function ansQ1(idx){
+  if(q1Answered) return; q1Answered=true;
+  var q=Q1[q1Idx];
+  var btns=document.querySelectorAll('.cbtn'); btns.forEach(function(b){b.disabled=true;});
+  var fb=document.getElementById('fb1');
+  var ok=(idx===q.c);
+  if(ok){btns[idx].classList.add('ok');fb.className='fbbox ok';fb.textContent='✓ '+q.ok;q1Score++;}
+  else{btns[idx].classList.add('fail');btns[q.c].classList.add('ok');fb.className='fbbox fail';fb.textContent='✗ '+q.fail;}
+  fb.style.display='block';
+  document.getElementById('bn1').style.display='inline-block';
+  q1Answers.push({question:q.q, given:q.ch[idx], correct:q.ch[q.c], isCorrect:ok});
+}
+function nextQ1(){
+  q1Idx++;
+  if(q1Idx>=Q1.length) showQ1Result();
+  else renderQ1();
+}
+function showQ1Result(){
+  var pct=Math.round(q1Score/Q1.length*100);
+  var gr=pct>=80?'Эксперт по продуктам':pct>=60?'Хорошая база':'Нужно повторить';
+  var adv=pct>=80?'Отличный результат! Знаете цифры и кейсы Smart Restaurant.':'Повторите цифры по продуктам — особенно SR Delivery и Guest 360.';
+  document.getElementById('q1content').innerHTML='<div class="result"><div class="trophy">'+(pct>=80?'🏅':pct>=60?'📈':'📚')+'</div><div class="rgrade">'+gr+'</div><div class="rpct">'+pct+'%</div><div class="rlbl">'+q1Score+' из '+Q1.length+' правильных</div><div class="radv">'+adv+'</div><div class="rgrid"><div class="ri"><div class="ri-l">Правильных</div><div class="ri-v">'+q1Score+'</div></div><div class="ri"><div class="ri-l">Ошибок</div><div class="ri-v">'+(Q1.length-q1Score)+'</div></div></div><button class="btn-nm" onclick="startQ2()">Модуль 2 →</button></div>';
+  document.getElementById('q1ctr').textContent='';
+  document.getElementById('q1fill').style.width='100%';
+  document.getElementById('ns1').className='ns done';
+  document.getElementById('ns2').className='ns active';
+  document.getElementById('ns2').classList.remove('locked');
+}
+
+// =====================================================================
+// QUIZ 2
+// =====================================================================
+function startQ2(){
+  q2Idx=0; q2Score=0; q2Answers=[];
+  showScreen('s-quiz2'); setNav(2);
+  renderQ2();
+}
+function renderQ2(){
+  var q=Q2[q2Idx];
+  q2Answered=false;
+  document.getElementById('q2ctr').textContent=(q2Idx+1)+' / '+Q2.length;
+  document.getElementById('q2fill').style.width=((q2Idx+1)/Q2.length*100)+'%';
+  var ch=q.ch.map(function(c,i){return '<button class="cbtn" onclick="ansQ2('+i+')">'+c+'</button>';}).join('');
+  document.getElementById('q2content').innerHTML='<div class="seg-intro"><div style="font-size:11px;font-weight:600;color:var(--g);margin-bottom:6px;">СЕГМЕНТ: '+q.seg+'</div><div class="qtext">'+q.q+'</div><div class="choices">'+ch+'</div><div class="fbbox" id="fb2"></div></div><button class="btn-next" id="bn2" onclick="nextQ2()">'+(q2Idx<Q2.length-1?'Следующий →':'Завершить модуль →')+'</button>';
+}
+function ansQ2(idx){
+  if(q2Answered) return; q2Answered=true;
+  var q=Q2[q2Idx];
+  var btns=document.querySelectorAll('.cbtn'); btns.forEach(function(b){b.disabled=true;});
+  var fb=document.getElementById('fb2');
+  var ok=(idx===q.c);
+  if(ok){btns[idx].classList.add('ok');fb.className='fbbox ok';fb.textContent='✓ '+q.ok;q2Score++;}
+  else{btns[idx].classList.add('fail');btns[q.c].classList.add('ok');fb.className='fbbox fail';fb.textContent='✗ '+q.fail;}
+  fb.style.display='block';
+  document.getElementById('bn2').style.display='inline-block';
+  q2Answers.push({question:'['+q.seg+'] '+q.q, given:q.ch[idx], correct:q.ch[q.c], isCorrect:ok});
+}
+function nextQ2(){
+  q2Idx++;
+  if(q2Idx>=Q2.length) showQ2Result();
+  else renderQ2();
+}
+function showQ2Result(){
+  var pct=Math.round(q2Score/Q2.length*100);
+  var gr=pct>=75?'Знаете клиента':pct>=50?'Средний уровень':'Нужно углубиться';
+  var adv=pct>=75?'Вы понимаете боли каждого сегмента и умеете подбирать продукты.':'Повторите матрицу сегментов — какой продукт для какого заведения и почему.';
+  document.getElementById('q2content').innerHTML='<div class="result"><div class="trophy">'+(pct>=75?'🏅':pct>=50?'📈':'📚')+'</div><div class="rgrade">'+gr+'</div><div class="rpct">'+pct+'%</div><div class="rlbl">'+q2Score+' из '+Q2.length+' правильных</div><div class="radv">'+adv+'</div><div class="rgrid"><div class="ri"><div class="ri-l">Правильных</div><div class="ri-v">'+q2Score+'</div></div><div class="ri"><div class="ri-l">Ошибок</div><div class="ri-v">'+(Q2.length-q2Score)+'</div></div></div><button class="btn-nm" onclick="startRP()">Модуль 3 — Ролевая игра →</button></div>';
+  document.getElementById('q2ctr').textContent='';
+  document.getElementById('q2fill').style.width='100%';
+  document.getElementById('ns2').className='ns done';
+  document.getElementById('ns3').className='ns active';
+  document.getElementById('ns3').classList.remove('locked');
+}
+
+// =====================================================================
+// ROLEPLAY
+// =====================================================================
+function startRP(){
+  rpIdx=0; rpScore=0; rpMaxScore=0; rpSpinCounts={S:0,P:0,I:0,N:0}; rpAnswers=[];
+  showScreen('s-rp'); setNav(3);
+  buildRpBars(); renderRpStep();
+}
+function buildRpBars(){
+  var labels=['S — Situation','P — Problem','I — Implication','N — Need-Payoff'];
+  document.getElementById('rpsbar').innerHTML=labels.map(function(_,i){return '<div class="rsb" id="rsb'+i+'"></div>';}).join('');
+  document.getElementById('rpslbls').innerHTML=labels.map(function(l,i){return '<div class="rsl" id="rsl'+i+'">'+l+'</div>';}).join('');
+  updateRpBars(0);
+}
+function updateRpBars(idx){
+  var map=[0,0,1,1,2,2,3,3];
+  var cur=map[Math.min(idx,map.length-1)];
+  [0,1,2,3].forEach(function(i){
+    var b=document.getElementById('rsb'+i),l=document.getElementById('rsl'+i);
+    if(!b) return;
+    b.className='rsb'+(i<cur?' done':i===cur?' act':'');
+    l.className='rsl'+(i===cur?' act':'');
+  });
+}
+function setMood(m){
+  var el=document.getElementById('pmood');
+  if(m==='neutral'){el.textContent='Нейтрален';el.className='pmood';}
+  else if(m==='warming'){el.textContent='Вовлекается';el.className='pmood warm';}
+  else if(m==='warm'){el.textContent='Заинтересован';el.className='pmood warm';}
+  else if(m==='cold'){el.textContent='Закрылся';el.className='pmood cold';}
+}
+function addMsg(who,text,tip,bad){
+  var chat=document.getElementById('rpchat');
+  var w=document.createElement('div'); w.className='cm '+who;
+  var lbl=who==='partner'?'Аскар':'Вы';
+  var tipHtml=tip?'<div class="cm-tip'+(bad?' bad':'')+'">'+tip+'</div>':'';
+  w.innerHTML='<div class="cm-who">'+lbl+'</div><div class="cm-bbl">'+text+'</div>'+tipHtml;
+  chat.appendChild(w); chat.scrollTop=chat.scrollHeight;
+}
+function showTyping(){
+  var chat=document.getElementById('rpchat');
+  var w=document.createElement('div'); w.className='cm partner'; w.id='rptyping';
+  w.innerHTML='<div class="cm-who">Аскар</div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div>';
+  chat.appendChild(w); chat.scrollTop=chat.scrollHeight;
+}
+function rmTyping(){var t=document.getElementById('rptyping');if(t)t.remove();}
+function renderRpStep(){
+  var step=RP_FLOW[rpIdx];
+  if(!step||step.stage===4){saveAndFinish();return;}
+  if(rpIdx===0) addMsg('partner',step.partner);
+  var panel=document.getElementById('rpcpanel'),cd=document.getElementById('rpchoices');
+  panel.style.display='';cd.innerHTML='';
+  step.ch.forEach(function(c){
+    var btn=document.createElement('button'); btn.className='rpchoice';
+    btn.innerHTML='<span class="rct '+c.t+'">'+c.t+'</span>'+c.text;
+    btn.onclick=function(){pickRP(c,step);};
+    cd.appendChild(btn);
+  });
+  updateRpBars(rpIdx);
+  if(step.mood) setMood(step.mood);
+}
+function pickRP(choice,step){
+  rpMaxScore+=3; rpScore+=choice.score;
+  if(choice.t!=='X') rpSpinCounts[choice.t]=(rpSpinCounts[choice.t]||0)+1;
+  rpAnswers.push({text:choice.text,type:choice.t,score:choice.score});
+  document.getElementById('rpcpanel').style.display='none';
+  addMsg('sales',choice.text,'💡 '+choice.tip,choice.score===0);
+  var ni=choice.next;
+  if(ni>=RP_FLOW.length||RP_FLOW[ni].stage===4){setTimeout(saveAndFinish,500);return;}
+  rpIdx=ni;
+  showTyping();
+  setTimeout(function(){
+    rmTyping();
+    var ns=RP_FLOW[ni];
+    addMsg('partner',ns.partner);
+    if(ns.mood) setMood(ns.mood);
+    updateRpBars(ni);
+    renderRpStep();
+  },1200);
+}
+
+// =====================================================================
+// SAVE + FINAL
+// =====================================================================
+function saveAndFinish(){
+  showScreen('s-saving');
+  var data={
+    name: userName,
+    quiz1Score: q1Score, quiz1Max: Q1.length, quiz1Answers: q1Answers,
+    quiz2Score: q2Score, quiz2Max: Q2.length, quiz2Answers: q2Answers,
+    rpScore: rpScore, rpMax: rpMaxScore, rpSpinCounts: rpSpinCounts, rpAnswers: rpAnswers
+  };
+  google.script.run
+    .withSuccessHandler(function(res){
+      sheetUrl=res.sheetUrl||'';
+      showFinal();
+    })
+    .withFailureHandler(function(){
+      showFinal();
+    })
+    .saveResults(data);
+}
+
+function showFinal(){
+  var q1pct=Math.round(q1Score/Q1.length*100);
+  var q2pct=Math.round(q2Score/Q2.length*100);
+  var rppct=rpMaxScore>0?Math.round(rpScore/rpMaxScore*100):0;
+  var avg=Math.round((q1pct+q2pct+rppct)/3);
+  var grade=avg>=85?'Мастер продаж':avg>=65?'Уверенный сейлз':'Есть куда расти';
+  var adv=avg>=85?'Вы провели переговоры по всем этапам SPIN, знаете продукты и понимаете сегменты. Готовы к реальным встречам.'
+    :avg>=65?'Хорошая база! Обратите внимание на этап Implication — углубляйте боль партнёра перед презентацией.'
+    :'Повторите материалы по продуктам и практикуйте SPIN-вопросы. Не торопитесь с презентацией — сначала выявите боль.';
+  var star=avg>=85?'🏆':avg>=65?'🥈':'📚';
+  document.getElementById('fstar').textContent=star;
+  document.getElementById('ftitle').textContent=grade;
+  document.getElementById('fscores').innerHTML=
+    '<div class="fsi"><div class="fsi-n">'+q1pct+'%</div><div class="fsi-l">Знание продуктов</div></div>'+
+    '<div class="fsi"><div class="fsi-n">'+q2pct+'%</div><div class="fsi-l">Сегменты и подбор</div></div>'+
+    '<div class="fsi"><div class="fsi-n">'+rppct+'%</div><div class="fsi-l">Ролевая игра SPIN</div></div>';
+  document.getElementById('fadv').textContent=adv;
+  var sl=document.getElementById('fsheetlink');
+  if(sheetUrl){
+    sl.innerHTML='<a class="sheet-link" href="'+sheetUrl+'" target="_blank">📊 Открыть таблицу с результатами</a>';
+  }
+  showScreen('s-final');
+  ['ns1','ns2','ns3'].forEach(function(id){document.getElementById(id).className='ns done';});
+}
+
+function restartAll(){
+  q1Idx=0;q1Score=0;q1Answers=[];
+  q2Idx=0;q2Score=0;q2Answers=[];
+  rpIdx=0;rpScore=0;rpMaxScore=0;rpSpinCounts={S:0,P:0,I:0,N:0};rpAnswers=[];
+  document.getElementById('nameInput').value='';
+  document.getElementById('btnStart').disabled=true;
+  showScreen('s-welcome');
+  setNav(1);
+  document.getElementById('ns2').className='ns locked';
+  document.getElementById('ns3').className='ns locked';
+}
+</script>
+</body>
+</html>
