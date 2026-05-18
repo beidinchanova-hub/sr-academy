@@ -1,0 +1,4341 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Restaurant — Sales Academy</title>
+<style>
+/* ============================================================
+   SR ACADEMY — Sales Training Simulator
+   Basic + Senior mode in a single file
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0a0e15;
+  --bg-2:      #0f141d;
+  --card:      rgba(255,255,255,0.035);
+  --card-2:    rgba(255,255,255,0.06);
+  --line:      rgba(255,255,255,0.08);
+  --line-2:    rgba(255,255,255,0.14);
+  --text:      #e9eef7;
+  --text-mute: #8995a8;
+  --text-soft: #c4cdd9;
+  --accent:    #ffd23a;
+  --accent-2:  #ff8a3a;
+  --accent-3:  #ff5a3a;
+  --good:      #4ade80;
+  --warn:      #ffb547;
+  --danger:    #ff5a5a;
+  --neutral:   #6b7a90;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+body {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255,210,58,0.06), transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(255,138,58,0.05), transparent 40%),
+    var(--bg);
+}
+
+a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+
+/* ── TOP BAR ─────────────────────────────────────────────── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: rgba(10,14,21,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: opacity .15s ease;
+}
+.brand:hover { opacity: 0.75; }
+.brand-dot {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+.progress-nav {
+  display: flex;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-mute);
+}
+.progress-nav .step {
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all .15s ease;
+  user-select: none;
+}
+.progress-nav .step:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+}
+.progress-nav .step.is-active {
+  color: var(--accent);
+  background: rgba(255,210,58,0.10);
+}
+.progress-nav .step.is-done {
+  color: var(--good);
+}
+.progress-nav .step-final {
+  color: var(--accent-2);
+}
+.progress-nav .step-final:hover {
+  background: rgba(255,138,58,0.10);
+}
+.mode-badge {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  border: 1px solid var(--line-2);
+  color: var(--text-mute);
+}
+body[data-mode="senior"] .mode-badge {
+  color: var(--accent-2);
+  border-color: var(--accent-2);
+  background: rgba(255,138,58,0.10);
+}
+
+@media (max-width: 720px) {
+  .progress-nav { display: none; }
+  .topbar { padding: 12px 16px; }
+}
+
+/* ── SCREENS ─────────────────────────────────────────────── */
+.screen {
+  display: none;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  animation: fadeIn .4s ease;
+}
+.screen.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── START SCREEN ────────────────────────────────────────── */
+.hero {
+  padding: 40px 0 24px;
+}
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+.hero h1 {
+  font-size: clamp(34px, 5vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  margin-bottom: 18px;
+  max-width: 720px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 17px;
+  color: var(--text-soft);
+  max-width: 560px;
+  margin-bottom: 36px;
+  line-height: 1.5;
+}
+
+.modules-preview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 36px;
+}
+@media (max-width: 720px) {
+  .modules-preview { grid-template-columns: repeat(2, 1fr); }
+}
+.module-card {
+  padding: 18px 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  transition: all .2s ease;
+}
+.module-card:hover {
+  border-color: var(--line-2);
+  background: var(--card-2);
+  transform: translateY(-2px);
+}
+.module-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.18em;
+  margin-bottom: 8px;
+}
+.module-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.module-desc {
+  font-size: 12px;
+  color: var(--text-mute);
+  line-height: 1.4;
+}
+
+/* ── Difficulty toggle ──────────────────────────────────── */
+.difficulty-block {
+  margin: 0 0 24px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255,210,58,0.06), transparent 50%),
+    var(--card);
+}
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.diff-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 520px) {
+  .diff-row { grid-template-columns: 1fr; }
+}
+.diff-btn {
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .18s ease;
+}
+.diff-btn:hover { border-color: var(--line-2); }
+.diff-btn.is-active {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(255,210,58,0.10), rgba(255,210,58,0.02));
+  box-shadow: 0 0 0 1px var(--accent) inset, 0 8px 24px -16px var(--accent);
+}
+.diff-btn.senior.is-active {
+  background: linear-gradient(180deg, rgba(255,138,58,0.14), rgba(255,90,58,0.04));
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 1px var(--accent-2) inset, 0 8px 24px -16px var(--accent-2);
+}
+.diff-label {
+  font-weight: 700;
+  font-size: 16px;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.diff-sub {
+  font-size: 12px;
+  color: var(--text-mute);
+  line-height: 1.4;
+}
+
+/* ── Name input ──────────────────────────────────────────── */
+.name-block {
+  margin-bottom: 20px;
+}
+.input {
+  width: 100%;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  transition: all .15s ease;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(255,210,58,0.04);
+}
+.input::placeholder { color: var(--text-mute); }
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #0a0e15;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all .15s ease;
+  letter-spacing: -0.01em;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px -12px var(--accent);
+}
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+  background: rgba(255,210,58,0.06);
+}
+
+/* ── QUIZ (Modules 1 & 2) ────────────────────────────────── */
+.quiz-header {
+  margin-bottom: 24px;
+  position: relative;
+}
+.skip-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-mute);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s ease;
+}
+.skip-btn:hover {
+  border-color: var(--line-2);
+  color: var(--text);
+  background: rgba(255,255,255,0.06);
+}
+.quiz-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+.quiz-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.quiz-counter {
+  font-size: 13px;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.quiz-progress {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+.quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  transition: width .4s cubic-bezier(.2,.7,.2,1);
+}
+
+.quiz-card {
+  padding: 28px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  margin-bottom: 20px;
+}
+.quiz-question {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  margin-bottom: 20px;
+}
+.quiz-options {
+  display: grid;
+  gap: 10px;
+}
+.quiz-opt {
+  text-align: left;
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+  transition: all .12s ease;
+}
+.quiz-opt:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(255,210,58,0.04);
+  transform: translateX(2px);
+}
+.quiz-opt.is-correct {
+  border-color: var(--good);
+  background: rgba(74,222,128,0.10);
+  color: var(--good);
+}
+.quiz-opt.is-wrong {
+  border-color: var(--danger);
+  background: rgba(255,90,90,0.10);
+  color: var(--danger);
+}
+.quiz-opt:disabled { cursor: default; }
+
+.quiz-feedback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  display: none;
+}
+.quiz-feedback.is-show { display: block; }
+.quiz-feedback.is-right {
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.25);
+  color: var(--good);
+}
+.quiz-feedback.is-wrong {
+  background: rgba(255,90,90,0.08);
+  border: 1px solid rgba(255,90,90,0.25);
+  color: var(--danger);
+}
+
+/* ── AI toggle (OpenAI API ключ) ─────────────────────────── */
+.ai-toggle {
+  margin-bottom: 28px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.02);
+}
+.ai-toggle summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  transition: background .15s ease;
+}
+.ai-toggle summary::-webkit-details-marker { display: none; }
+.ai-toggle summary:hover { background: rgba(255,255,255,0.03); }
+.ai-status {
+  font-size: 14px;
+  color: var(--text-soft);
+}
+.ai-status.is-connected strong {
+  color: var(--good);
+}
+.ai-status strong {
+  color: var(--text-mute);
+}
+.ai-chevron {
+  color: var(--text-mute);
+  font-size: 14px;
+  transition: transform .2s ease;
+}
+.ai-toggle[open] .ai-chevron { transform: rotate(180deg); }
+.ai-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--line);
+}
+.ai-desc {
+  font-size: 13px;
+  color: var(--text-soft);
+  line-height: 1.55;
+  margin: 14px 0 8px;
+}
+.ai-cost {
+  font-size: 12px;
+  color: var(--text-mute);
+  margin: 0 0 14px;
+  line-height: 1.5;
+}
+.ai-input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.ai-tab-row {
+  display: flex;
+  gap: 4px;
+  margin: 14px 0 12px;
+  padding: 4px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+}
+.ai-tab {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-mute);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all .15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.ai-tab:hover { color: var(--text); }
+.ai-tab.is-active {
+  background: rgba(255,210,58,0.10);
+  color: var(--accent);
+}
+.ai-tab-rec {
+  font-size: 10px;
+  background: var(--good);
+  color: #0a0e15;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+.ai-tab-warn {
+  font-size: 10px;
+  background: rgba(255,181,71,0.15);
+  color: var(--warn);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+.ai-tab-body code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  background: rgba(255,255,255,0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.ai-input-row input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 13px;
+}
+.ai-input-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+.ai-hint {
+  font-size: 12px;
+  color: var(--text-mute);
+  margin: 0;
+}
+.ai-hint a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.ai-hint a:hover { text-decoration: underline; }
+.ai-test-result {
+  font-size: 12px;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+.ai-test-result.is-success {
+  background: rgba(74,222,128,0.10);
+  color: var(--good);
+  border: 1px solid rgba(74,222,128,0.25);
+}
+.ai-test-result.is-error {
+  background: rgba(255,90,90,0.10);
+  color: var(--danger);
+  border: 1px solid rgba(255,90,90,0.25);
+}
+
+/* AI индикатор в Module 3 */
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+.ai-badge.is-on {
+  background: rgba(74,222,128,0.15);
+  color: var(--good);
+}
+.ai-badge.is-off {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-mute);
+}
+
+/* ── SEGMENT MULTI-SELECT (Module 2) ──────────────────────── */
+.segment-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.segment-desc {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-soft);
+  margin-bottom: 22px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.025);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+}
+.segment-prompt {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+.segment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.segment-pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: all .15s ease;
+  user-select: none;
+}
+.segment-pick:hover { border-color: var(--line-2); background: rgba(255,255,255,0.04); }
+.segment-pick.is-on {
+  border-color: var(--accent);
+  background: rgba(255,210,58,0.10);
+}
+.segment-check {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid var(--line-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: transparent;
+  flex-shrink: 0;
+  transition: all .15s ease;
+}
+.segment-pick.is-on .segment-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0e15;
+}
+.segment-pname {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+/* feedback после ответа */
+.segment-pick.is-right { border-color: var(--good); background: rgba(74,222,128,0.10); }
+.segment-pick.is-right .segment-check { background: var(--good); border-color: var(--good); color: #0a0e15; }
+.segment-pick.is-wrong { border-color: var(--danger); background: rgba(255,90,90,0.10); opacity: 0.9; }
+.segment-pick.is-wrong .segment-check { background: var(--danger); border-color: var(--danger); color: #fff; }
+.segment-pick.is-wrong .segment-check::after { content: '✗'; }
+.segment-pick.is-wrong .segment-check { font-size: 0; }
+.segment-pick.is-wrong .segment-check::after { font-size: 13px; }
+.segment-pick.is-missed { border-color: var(--warn); border-style: dashed; background: rgba(255,181,71,0.06); }
+
+.segment-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.segment-counter {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.breakdown-section {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.breakdown-row {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.025);
+}
+.breakdown-row.right { border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.06); }
+.breakdown-row.missed { border-color: rgba(255,181,71,0.3); background: rgba(255,181,71,0.06); }
+.breakdown-row.wrong { border-color: rgba(255,90,90,0.3); background: rgba(255,90,90,0.06); }
+.breakdown-icon {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  font-family: inherit;
+}
+.breakdown-row.right .breakdown-icon { background: var(--good); color: #0a0e15; }
+.breakdown-row.missed .breakdown-icon { background: var(--warn); color: #0a0e15; }
+.breakdown-row.wrong .breakdown-icon { background: var(--danger); color: #fff; }
+.breakdown-name {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.breakdown-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-soft);
+}
+
+/* ── OPEN-TEXT QUIZ (Senior M1/M2/Defense) ─────────────── */
+.open-quiz {
+  padding: 28px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  margin-bottom: 20px;
+}
+.open-q {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+.open-q-context {
+  font-size: 13px;
+  color: var(--text-mute);
+  margin-bottom: 18px;
+  padding: 10px 14px;
+  border-left: 2px solid var(--accent-2);
+  background: rgba(255,138,58,0.05);
+  border-radius: 0 8px 8px 0;
+  line-height: 1.5;
+}
+.open-textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  resize: vertical;
+  transition: border-color .15s ease, background .15s ease;
+}
+.open-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(255,210,58,0.04);
+}
+.open-textarea.is-error {
+  border-color: var(--danger);
+  animation: shake .35s;
+}
+.open-textarea:disabled { opacity: 0.7; }
+
+.open-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  gap: 12px;
+}
+.open-counter {
+  font-size: 12px;
+  color: var(--text-mute);
+  font-variant-numeric: tabular-nums;
+}
+.open-counter.is-ok { color: var(--good); }
+
+/* Evaluation result */
+.eval-result {
+  margin-top: 16px;
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--line);
+}
+.eval-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.eval-verdict {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 6px;
+}
+.eval-verdict.strong { background: rgba(74,222,128,0.15); color: var(--good); }
+.eval-verdict.partial { background: rgba(255,181,71,0.15); color: var(--warn); }
+.eval-verdict.weak { background: rgba(255,90,90,0.15); color: var(--danger); }
+
+.eval-score {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.eval-score.strong { color: var(--good); }
+.eval-score.partial { color: var(--warn); }
+.eval-score.weak { color: var(--danger); }
+
+.eval-group {
+  margin-bottom: 14px;
+}
+.eval-group-title {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.concept-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.concept {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-mute);
+}
+.concept.hit { background: rgba(74,222,128,0.12); border-color: rgba(74,222,128,0.3); color: var(--good); }
+.concept.miss { background: rgba(255,90,90,0.06); border-color: rgba(255,90,90,0.25); color: #c4a0a0; }
+.concept.red { background: rgba(255,90,90,0.12); border-color: rgba(255,90,90,0.3); color: var(--danger); }
+
+.ideal-block {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(255,210,58,0.06);
+  border: 1px solid rgba(255,210,58,0.2);
+}
+.ideal-title {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.ideal-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.open-next {
+  margin-top: 16px;
+  text-align: right;
+}
+
+/* ── Timer (Senior) ──────────────────────────────────────── */
+.timer-bar {
+  position: fixed;
+  top: 56px;
+  left: 0; right: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: rgba(10,14,21,0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.timer-bar.is-active { display: flex; }
+.timer-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+}
+.timer-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.timer-fill {
+  height: 100%;
+  background: var(--good);
+  transition: width 1s linear, background .3s ease;
+}
+.timer-bar.is-warn .timer-fill { background: var(--warn); }
+.timer-bar.is-danger .timer-fill {
+  background: var(--danger);
+  animation: pulse 0.5s infinite;
+}
+.timer-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 14px;
+  min-width: 30px;
+  text-align: right;
+}
+.timer-bar.is-danger .timer-num { color: var(--danger); }
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+/* ── MODULE 3 — Role play ─────────────────────────────────── */
+.roleplay-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .roleplay-grid { grid-template-columns: 1fr; }
+}
+
+.persona-card {
+  padding: 24px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  position: sticky;
+  top: 80px;
+}
+.avatar {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: #0a0e15;
+  margin-bottom: 14px;
+}
+.persona-name { font-weight: 700; font-size: 17px; margin-bottom: 4px; letter-spacing: -0.01em; }
+.persona-role { font-size: 13px; color: var(--text-mute); margin-bottom: 18px; line-height: 1.4; }
+
+.loyalty-block { margin-top: 16px; }
+.loyalty-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 8px;
+}
+.loyalty-track {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.loyalty-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--danger), var(--warn), var(--good));
+  transition: width .5s cubic-bezier(.2,.7,.2,1);
+  width: 50%;
+}
+.loyalty-status {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chat-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 200px;
+}
+.msg {
+  max-width: 88%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  animation: fadeIn .3s ease;
+}
+.msg.askar {
+  align-self: flex-start;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 4px;
+}
+.msg.manager {
+  align-self: flex-end;
+  background: linear-gradient(135deg, rgba(255,210,58,0.18), rgba(255,138,58,0.12));
+  border: 1px solid rgba(255,210,58,0.25);
+  border-bottom-right-radius: 4px;
+}
+.msg.system {
+  align-self: center;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  background: transparent;
+  padding: 6px 0;
+}
+
+.answer-area {
+  margin-top: 12px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+.answer-hint {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+.choice-list { display: grid; gap: 8px; }
+.choice-btn {
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.45;
+  transition: all .12s ease;
+}
+.choice-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: rgba(255,210,58,0.04);
+}
+.choice-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* Senior chat input */
+.senior-spin-hint {
+  font-size: 12px;
+  color: var(--text-mute);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-left: 2px solid var(--accent-2);
+  background: rgba(255,138,58,0.05);
+  border-radius: 0 8px 8px 0;
+}
+.senior-textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color .15s ease, background .15s ease;
+}
+.senior-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(255,210,58,0.04);
+}
+.senior-textarea.is-error {
+  border-color: var(--danger);
+  animation: shake .35s;
+}
+@keyframes shake {
+  10%,90% { transform: translateX(-1px); }
+  20%,80% { transform: translateX(2px); }
+  30%,50%,70% { transform: translateX(-3px); }
+  40%,60% { transform: translateX(3px); }
+}
+.spin-meter {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.spin-chip {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-mute);
+  border: 1px solid var(--line);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.spin-chip.is-used {
+  background: rgba(74,222,128,0.10);
+  border-color: rgba(74,222,128,0.3);
+  color: var(--good);
+}
+
+/* ── MODULE 4 — ROI ──────────────────────────────────────── */
+.roi-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 860px) {
+  .roi-layout { grid-template-columns: 1fr; }
+}
+.roi-section {
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+.roi-section-title {
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+.roi-field { margin-bottom: 14px; }
+.roi-field label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-mute);
+  margin-bottom: 6px;
+}
+.roi-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.roi-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.product-grid {
+  display: grid;
+  gap: 8px;
+}
+.product-pick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: all .12s ease;
+}
+.product-pick:hover { border-color: var(--line-2); }
+.product-pick.is-on {
+  border-color: var(--accent);
+  background: rgba(255,210,58,0.06);
+}
+.product-check {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid var(--line-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: transparent;
+  flex-shrink: 0;
+}
+.product-pick.is-on .product-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0e15;
+}
+.product-info { flex: 1; }
+.product-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.product-meta { font-size: 12px; color: var(--text-mute); }
+.product-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.roi-result {
+  margin-top: 20px;
+  padding: 26px;
+  border-radius: 16px;
+  border: 1px solid var(--accent);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255,210,58,0.10), transparent 60%),
+    var(--card);
+}
+.roi-cmp {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+@media (max-width: 520px) {
+  .roi-cmp { grid-template-columns: 1fr; }
+}
+.roi-cmp-side {
+  padding: 14px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03);
+}
+.roi-cmp-side.us {
+  background: linear-gradient(135deg, rgba(255,210,58,0.12), rgba(255,138,58,0.08));
+}
+.roi-cmp-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 8px;
+}
+.roi-cmp-val {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.roi-cmp-sub {
+  font-size: 12px;
+  color: var(--text-mute);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.roi-cmp-arrow {
+  font-size: 24px;
+  color: var(--accent);
+  text-align: center;
+}
+.roi-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 520px) {
+  .roi-summary { grid-template-columns: 1fr; }
+}
+.roi-stat-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-mute);
+  margin-bottom: 4px;
+}
+.roi-stat-val {
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.roi-stat-val.good { color: var(--good); }
+.roi-payback {
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: rgba(74,222,128,0.10);
+  border: 1px solid rgba(74,222,128,0.3);
+  text-align: center;
+}
+.roi-payback-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--good);
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+.roi-payback-val {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--good);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Senior ROI defense */
+.defense-block {
+  margin-top: 28px;
+  padding: 24px;
+  border: 1px solid rgba(255,90,90,0.3);
+  border-radius: 16px;
+  background:
+    linear-gradient(180deg, rgba(255,90,90,0.06), transparent 60%),
+    var(--card);
+}
+.defense-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--danger);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.defense-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 18px;
+}
+.defense-q {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.defense-q em { font-style: italic; color: var(--accent-2); }
+.defense-opts { display: grid; gap: 8px; }
+
+/* ── FINAL SCREEN ────────────────────────────────────────── */
+.final-hero {
+  text-align: center;
+  padding: 20px 0 24px;
+}
+.final-icon {
+  font-size: 56px;
+  margin-bottom: 14px;
+}
+.final-title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.final-sub {
+  font-size: 16px;
+  color: var(--text-mute);
+  max-width: 480px;
+  margin: 0 auto 24px;
+  line-height: 1.5;
+}
+
+.basic-score {
+  margin: 0 auto 24px;
+  max-width: 440px;
+  padding: 28px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-align: center;
+}
+.basic-score-pct {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.basic-score-label {
+  font-size: 13px;
+  color: var(--text-mute);
+}
+
+/* Senior final card */
+.senior-final {
+  max-width: 720px;
+  margin: 0 auto 24px;
+  padding: 28px 32px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  position: relative;
+  overflow: hidden;
+}
+.senior-final.pass { border-color: rgba(74,222,128,0.4); }
+.senior-final.fail { border-color: rgba(255,90,90,0.4); }
+.senior-final::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 100% 0%, rgba(255,210,58,0.10), transparent 60%);
+  pointer-events: none;
+}
+.senior-final-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  position: relative;
+}
+.senior-badge {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+.pass .senior-badge {
+  background: rgba(74,222,128,0.15);
+  color: var(--good);
+}
+.fail .senior-badge {
+  background: rgba(255,90,90,0.15);
+  color: var(--danger);
+}
+.senior-pct {
+  font-size: 48px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.senior-status {
+  font-size: 14px;
+  color: var(--text-mute);
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.breakdown { display: grid; gap: 10px; margin-bottom: 24px; position: relative; }
+.bd-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 48px;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.bd-name { color: var(--text-mute); }
+.bd-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.bd-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  transition: width .8s cubic-bezier(.2,.7,.2,1);
+}
+.bd-val {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.spin-summary {
+  margin-bottom: 24px;
+  position: relative;
+}
+.spin-summary-title {
+  font-size: 12px;
+  color: var(--text-mute);
+  margin-bottom: 10px;
+  letter-spacing: 0.06em;
+}
+.spin-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.spin-pill {
+  font-size: 12px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-mute);
+  border: 1px solid var(--line);
+}
+.spin-pill.on {
+  background: rgba(74,222,128,0.10);
+  color: var(--good);
+  border-color: rgba(74,222,128,0.3);
+}
+
+.gaps {
+  padding: 18px;
+  border-radius: 14px;
+  background: rgba(255,90,90,0.05);
+  border: 1px solid rgba(255,90,90,0.2);
+  position: relative;
+}
+.gaps-title {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--danger);
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+.gap {
+  font-size: 14px;
+  line-height: 1.55;
+  margin-bottom: 8px;
+  color: var(--text);
+  padding-left: 14px;
+  position: relative;
+}
+.gap::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--danger);
+}
+.gap:last-child { margin-bottom: 0; }
+
+.final-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+/* ── Loader ──────────────────────────────────────────────── */
+.loading {
+  display: none;
+  text-align: center;
+  padding: 30px;
+  color: var(--text-mute);
+}
+.loading.is-show { display: block; }
+.loading .spinner {
+  width: 24px; height: 24px;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* misc */
+.muted { color: var(--text-mute); }
+.t-right { text-align: right; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.divider { height: 1px; background: var(--line); margin: 16px 0; }
+.tag {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(255,210,58,0.10);
+  color: var(--accent);
+}
+.tag.senior { background: rgba(255,138,58,0.12); color: var(--accent-2); }
+
+</style>
+</head>
+<body data-mode="basic">
+
+<!-- ─────────────────── TOP BAR ─────────────────── -->
+<header class="topbar">
+  <div class="brand" id="brandHome" title="На стартовый экран"><span class="brand-dot"></span> SmartRestaurant Academy</div>
+  <nav class="progress-nav">
+    <span class="step" data-step="1">1. Продукты</span>
+    <span class="step" data-step="2">2. Сегменты</span>
+    <span class="step" data-step="3">3. Ролевая</span>
+    <span class="step" data-step="4">4. ROI</span>
+    <span class="step step-final" data-step="5">★ Финал</span>
+  </nav>
+  <span class="mode-badge" id="modeBadge">Базовый</span>
+</header>
+
+<!-- ─────────────────── TIMER (Senior) ─────────────────── -->
+<div class="timer-bar" id="timerBar">
+  <span class="timer-label">Время на ответ</span>
+  <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+  <span class="timer-num" id="timerNum">20</span>
+</div>
+
+<!-- ─────────────────── START SCREEN ─────────────────── -->
+<section id="screen-start" class="screen active">
+  <div class="hero">
+    <div class="hero-eyebrow">Sales Academy</div>
+    <h1>Продавай умнее. <br>Расти с <em>Smart Restaurant.</em></h1>
+    <p class="hero-sub">Четыре модуля — знание продуктов, понимание клиента, переговоры по SPIN и обоснование ROI. Результаты записываются в таблицу для менеджера.</p>
+  </div>
+
+  <div class="modules-preview">
+    <div class="module-card">
+      <div class="module-num">01</div>
+      <div class="module-title">Продукты SR</div>
+      <div class="module-desc">Цифры, кейсы, конкуренты</div>
+    </div>
+    <div class="module-card">
+      <div class="module-num">02</div>
+      <div class="module-title">Сегменты</div>
+      <div class="module-desc">Какой продукт для какого заведения</div>
+    </div>
+    <div class="module-card">
+      <div class="module-num">03</div>
+      <div class="module-title">Ролевая игра</div>
+      <div class="module-desc">Переговоры с ЛПР по SPIN</div>
+    </div>
+    <div class="module-card">
+      <div class="module-num">04</div>
+      <div class="module-title">Калькулятор ROI</div>
+      <div class="module-desc">Считай выгоду для клиента</div>
+    </div>
+  </div>
+
+  <div class="difficulty-block">
+    <div class="section-label">Уровень сложности</div>
+    <div class="diff-row">
+      <button type="button" class="diff-btn is-active" data-mode="basic">
+        <div class="diff-label">Базовый</div>
+        <div class="diff-sub">Онбординг для новичков. Готовые варианты ответов, без таймера, проходной балл 70%.</div>
+      </button>
+      <button type="button" class="diff-btn senior" data-mode="senior">
+        <div class="diff-label">Профи · Senior</div>
+        <div class="diff-sub">Свободный ввод реплик. Таймер 20с. Аскар-скептик. Защита ROI. Порог: 90%.</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ИИ-собеседник: прокси-сервер (рекомендуется) или прямой API ключ (только для локальной разработки) -->
+  <details class="ai-toggle" id="aiToggle">
+    <summary>
+      <span class="ai-status" id="aiStatus">🤖 ИИ-собеседник: <strong>локальная логика</strong></span>
+      <span class="ai-chevron">⌄</span>
+    </summary>
+    <div class="ai-body">
+      <p class="ai-desc">
+        Подключите OpenAI — Аскар будет реагировать как живой человек: помнить контекст диалога, признавать ваши расчёты, варьировать ответы. Без подключения работает упрощённая keyword-логика.
+      </p>
+
+      <div class="ai-tab-row">
+        <button type="button" class="ai-tab is-active" data-tab="proxy">Прокси-сервер <span class="ai-tab-rec">рекомендуется</span></button>
+        <button type="button" class="ai-tab" data-tab="key">Свой ключ <span class="ai-tab-warn">только для разработки</span></button>
+      </div>
+
+      <div class="ai-tab-body" data-tab-body="proxy">
+        <p class="ai-cost">
+          Ключ хранится <strong>на вашем Cloudflare Worker</strong> и никогда не светится в браузере. Безопасно для GitHub Pages.
+        </p>
+        <div class="ai-input-row">
+          <input type="url" id="proxyUrlInput" placeholder="https://sr-askar-proxy.you.workers.dev" autocomplete="off" />
+          <button type="button" class="btn-secondary" id="proxyUrlSave">Сохранить</button>
+          <button type="button" class="btn-secondary" id="proxyUrlClear" style="display:none">Отключить</button>
+        </div>
+        <p class="ai-hint">
+          Как развернуть прокси за 5 минут — см. файл <code>cloudflare-worker.js</code> в репозитории. Бесплатный план Cloudflare покрывает 100 000 запросов в день.
+        </p>
+      </div>
+
+      <div class="ai-tab-body" data-tab-body="key" style="display:none">
+        <p class="ai-cost" style="color: var(--warn)">
+          ⚠ Ключ хранится в браузере (localStorage). НЕ ВШИВАЙТЕ ключ в код index.html — его украдут со страницы GitHub Pages. Этот режим — только для локальной разработки на своём компьютере.
+        </p>
+        <div class="ai-input-row">
+          <input type="password" id="apiKeyInput" placeholder="sk-proj-..." autocomplete="off" />
+          <button type="button" class="btn-secondary" id="apiKeySave">Сохранить</button>
+          <button type="button" class="btn-secondary" id="apiKeyClear" style="display:none">Отключить</button>
+        </div>
+        <p class="ai-hint">
+          Где взять ключ: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>
+        </p>
+      </div>
+
+      <p class="ai-test-result" id="aiTestResult"></p>
+    </div>
+  </details>
+
+  <div class="name-block">
+    <div class="section-label">Ваше имя и фамилия</div>
+    <input type="text" class="input" id="managerName" placeholder="Иван Иванов" autocomplete="name">
+  </div>
+
+  <button class="btn-primary" id="startBtn" disabled>Начать обучение →</button>
+</section>
+
+<!-- ─────────────────── MODULE 1 — Products ─────────────────── -->
+<section id="screen-m1" class="screen">
+  <div class="quiz-header">
+    <button class="skip-btn" onclick="jumpTo(2)">Пропустить →</button>
+    <div class="quiz-eyebrow">Модуль 01 <span id="m1ModeTag" class="tag" style="margin-left:8px">Базовый</span></div>
+    <div class="quiz-title">Продукты SR</div>
+    <div class="quiz-counter"><span id="m1Cur">1</span> из <span id="m1Tot">10</span></div>
+  </div>
+  <div class="quiz-progress"><div class="quiz-progress-fill" id="m1Progress" style="width: 10%"></div></div>
+  <div class="quiz-card">
+    <div class="quiz-question" id="m1Q">…</div>
+    <div class="quiz-options" id="m1Opts"></div>
+    <div class="quiz-feedback" id="m1Fb"></div>
+  </div>
+</section>
+
+<!-- ─────────────────── MODULE 2 — Segments ─────────────────── -->
+<section id="screen-m2" class="screen">
+  <div class="quiz-header">
+    <button class="skip-btn" onclick="jumpTo(3)">Пропустить →</button>
+    <div class="quiz-eyebrow">Модуль 02 <span id="m2ModeTag" class="tag" style="margin-left:8px">Базовый</span></div>
+    <div class="quiz-title">Сегменты — кому и что продаём</div>
+    <div class="quiz-counter">Сегмент <span id="m2Cur">1</span> из <span id="m2Tot">12</span></div>
+  </div>
+  <div class="quiz-progress"><div class="quiz-progress-fill" id="m2Progress" style="width: 10%"></div></div>
+  <div class="quiz-card">
+    <div class="quiz-question" id="m2Q">…</div>
+    <div class="quiz-options" id="m2Opts"></div>
+    <div class="quiz-feedback" id="m2Fb"></div>
+  </div>
+</section>
+
+<!-- ─────────────────── MODULE 3 — Roleplay ─────────────────── -->
+<section id="screen-m3" class="screen">
+  <div class="quiz-header">
+    <button class="skip-btn" onclick="jumpTo(4)">Пропустить →</button>
+    <div class="quiz-eyebrow">Модуль 03 <span id="m3ModeTag" class="tag" style="margin-left:8px">Базовый</span></div>
+    <div class="quiz-title">Ролевая игра — переговоры по SPIN</div>
+    <div class="quiz-counter">Ход <span id="m3Turn">1</span> из <span id="m3TotTurns">10</span></div>
+  </div>
+
+  <div class="roleplay-grid">
+    <aside class="persona-card">
+      <div class="avatar">АМ</div>
+      <div class="persona-name">Аскар Мамытов</div>
+      <div class="persona-role">Владелец кафе «Ноль градусов», Алматы. 30 столов, средний чек 3 500 тг.</div>
+
+      <div class="loyalty-block">
+        <div class="loyalty-label"><span>Лояльность</span><span id="loyaltyPct">50%</span></div>
+        <div class="loyalty-track"><div class="loyalty-fill" id="loyaltyFill"></div></div>
+        <div class="loyalty-status" id="loyaltyStatus">Нейтрален</div>
+      </div>
+    </aside>
+
+    <div class="chat-area">
+      <div class="chat-log" id="chatLog"></div>
+      <div class="answer-area" id="answerArea"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── MODULE 4 — ROI ─────────────────── -->
+<section id="screen-m4" class="screen">
+  <div class="quiz-header">
+    <button class="skip-btn" onclick="jumpTo(5)">Пропустить к финалу →</button>
+    <div class="quiz-eyebrow">Модуль 04 <span id="m4ModeTag" class="tag" style="margin-left:8px">Базовый</span></div>
+    <div class="quiz-title">Калькулятор ROI</div>
+    <div class="quiz-counter">Введи данные → получи расчёт</div>
+  </div>
+
+  <div class="roi-layout">
+    <div class="roi-section">
+      <div class="roi-section-title">📊 Данные заведения</div>
+      <div class="roi-field"><label>Заказов / чеков в день</label>
+        <input type="number" class="roi-input" id="roiChecks" value="120"></div>
+      <div class="roi-field"><label>Средний чек (тг)</label>
+        <input type="number" class="roi-input" id="roiAvg" value="3500"></div>
+      <div class="roi-field"><label>Столов в зале</label>
+        <input type="number" class="roi-input" id="roiTables" value="30"></div>
+      <div class="roi-field"><label>Кол-во локаций</label>
+        <input type="number" class="roi-input" id="roiLoc" value="1"></div>
+      <div class="roi-field"><label>% оцифровки гостей (через SR)</label>
+        <input type="number" class="roi-input" id="roiDig" value="30"></div>
+
+      <div class="divider"></div>
+      <div class="roi-section-title">🚚 Доставка</div>
+      <div class="roi-field"><label>Заказов доставки / мес</label>
+        <input type="number" class="roi-input" id="roiDel" value="400"></div>
+      <div class="roi-field"><label>Средний чек доставки (тг)</label>
+        <input type="number" class="roi-input" id="roiDelAvg" value="4500"></div>
+      <div class="roi-field"><label>Комиссия агрегатора (%)</label>
+        <input type="number" class="roi-input" id="roiDelCom" value="25"></div>
+    </div>
+
+    <div class="roi-section">
+      <div class="roi-section-title">⚙️ Выбери продукты</div>
+      <div class="product-grid" id="productGrid"></div>
+    </div>
+  </div>
+
+  <div class="roi-result" id="roiResult">
+    <div class="roi-cmp">
+      <div class="roi-cmp-side">
+        <div class="roi-cmp-label">БЕЗ НАС</div>
+        <div class="roi-cmp-val" id="roiBaseDay">0 тг</div>
+        <div class="roi-cmp-sub">в день · <span id="roiBaseMonth">0 тг</span> в месяц</div>
+      </div>
+      <div class="roi-cmp-arrow">→</div>
+      <div class="roi-cmp-side us">
+        <div class="roi-cmp-label">С НАМИ</div>
+        <div class="roi-cmp-val" id="roiUsDay">0 тг</div>
+        <div class="roi-cmp-sub">в день · <span id="roiUsMonth">0 тг</span> в месяц</div>
+      </div>
+    </div>
+    <div class="roi-summary">
+      <div>
+        <div class="roi-stat-label">Доп. выручка / мес</div>
+        <div class="roi-stat-val good" id="roiExtra">0 тг</div>
+      </div>
+      <div>
+        <div class="roi-stat-label">Стоимость / мес</div>
+        <div class="roi-stat-val" id="roiCost">0 тг</div>
+      </div>
+      <div>
+        <div class="roi-stat-label">Чистая выгода / мес</div>
+        <div class="roi-stat-val good" id="roiNet">0 тг</div>
+      </div>
+    </div>
+    <div class="roi-payback">
+      <div class="roi-payback-label">Окупаемость</div>
+      <div class="roi-payback-val" id="roiPayback">— мес</div>
+    </div>
+  </div>
+
+  <div class="defense-block" id="defenseBlock" style="display:none">
+    <div class="defense-eyebrow">🛡 Защита кейса перед клиентом</div>
+    <div class="defense-title">Аскар не верит вашим цифрам. Обоснуйте.</div>
+    <div id="defenseArea"></div>
+  </div>
+
+  <div class="mt-24" style="text-align:right">
+    <button class="btn-primary" id="finishBtn">Завершить и отправить →</button>
+  </div>
+</section>
+
+<!-- ─────────────────── FINAL ─────────────────── -->
+<section id="screen-final" class="screen">
+  <div class="loading" id="finalLoading">
+    <div class="spinner"></div>
+    Сохраняем результаты в таблицу…
+  </div>
+
+  <div id="finalContent" style="display:none">
+    <div class="final-hero">
+      <div class="final-icon">🏆</div>
+      <div class="final-title">Готово!</div>
+      <div class="final-sub" id="finalSubText">Все модули пройдены. Результаты сохранены в таблицу менеджера.</div>
+    </div>
+
+    <div id="basicFinal"></div>
+    <div id="seniorFinal"></div>
+
+    <div class="final-actions">
+      <button class="btn-secondary" onclick="location.reload()">↺ Пройти заново</button>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   SR ACADEMY — APPLICATION
+   ════════════════════════════════════════════════════════════ */
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 1. CONFIG — поменяйте URL на свой Apps Script endpoint   │
+   └──────────────────────────────────────────────────────────┘ */
+const SHEETS_URL = 'https://script.google.com/macros/s/REPLACE_WITH_YOUR_DEPLOYMENT_ID/exec';
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 2. STATE                                                  │
+   └──────────────────────────────────────────────────────────┘ */
+const app = {
+  mode: 'basic',
+  managerName: '',
+  startedAt: null,
+
+  m1: { idx: 0, correct: 0, timeouts: 0, history: [] },
+  m2: { idx: 0, correct: 0, timeouts: 0, history: [] },
+  m3: {
+    turn: 0,
+    loyalty: 50,
+    log: [],
+    spin: { S: 0, P: 0, I: 0, N: 0 },
+    objectionsHandled: 0,
+    objectionsTotal: 0,
+    pitchedTooEarly: false,
+    correctChoices: 0,
+    totalChoices: 0
+  },
+  m4: {
+    selected: new Set(),
+    inputs: {},
+    defenseCorrect: 0,
+    defenseDone: false,
+    result: null
+  },
+
+  timer: null
+};
+
+window.app = app; // экспорт для отладки
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 3. QUESTIONS — Module 1: Products                         │
+   └──────────────────────────────────────────────────────────┘ */
+const M1_BASIC = [
+  {
+    q: 'Сколько стоит "Без кассира" в месяц?',
+    options: ['60 000 тг', '84 000 тг', '120 000 тг', '150 000 тг'],
+    correct: 1,
+    explain: 'Базовый тариф "Без кассира" — 84 000 тг/мес.'
+  },
+  {
+    q: 'Какой прирост к среднему чеку даёт "Без кассира"?',
+    options: ['+5%', '+10%', '+16%', '+30%'],
+    correct: 2,
+    explain: 'QR-меню без давления официанта стабильно даёт +16% к чеку.'
+  },
+  {
+    q: 'Стоимость "Без официанта" в месяц?',
+    options: ['60 000 тг', '84 000 тг', '120 000 тг', '180 000 тг'],
+    correct: 2,
+    explain: '120 000 тг/мес — за продукт, который освобождает официантов от рутины.'
+  },
+  {
+    q: 'Главный эффект "Без официанта"?',
+    options: [
+      'Только экономия на зарплате',
+      '+30% оборачиваемость + +16% к чеку',
+      'Только апсейл блюд',
+      'Только онлайн-оплата'
+    ],
+    correct: 1,
+    explain: 'Гости не ждут официанта = столы освобождаются быстрее (+30%) и заказы крупнее (+16%).'
+  },
+  {
+    q: 'Сколько стоит "Подтягивание счёта"?',
+    options: ['30 000 тг', '60 000 тг', '90 000 тг', '120 000 тг'],
+    correct: 1,
+    explain: '60 000 тг/мес — самый дешёвый вход в линейку SR.'
+  },
+  {
+    q: 'Главная ценность "Подтягивания счёта"?',
+    options: [
+      'Только удобство',
+      '+8% к выручке за счёт оцифровки гостей',
+      'Замена кассы',
+      'Бесплатная доставка'
+    ],
+    correct: 1,
+    explain: 'Гость оплачивает через QR → попадает в базу → +8% к выручке через ремаркетинг.'
+  },
+  {
+    q: 'Стоимость SR "Доставка"?',
+    options: ['40 000 тг', '60 000 тг', '90 000 тг', '120 000 тг'],
+    correct: 1
+  },
+  {
+    q: 'Главное преимущество SR Доставки vs агрегаторов?',
+    options: [
+      'Дешевле курьеры',
+      'Экономия 30% на комиссии агрегатора',
+      'Быстрее доставка',
+      'Бренд агрегатора лучше'
+    ],
+    correct: 1,
+    explain: 'Уход от комиссии Glovo/Wolt (25-30%) — главная экономика.'
+  },
+  {
+    q: 'Стоимость "Лояльности" на всю сеть?',
+    options: ['60 000 тг', '120 000 тг', '60 000 за точку', '180 000 тг'],
+    correct: 0,
+    explain: '60 000 тг — одна цена на всю сеть, независимо от числа точек.'
+  },
+  {
+    q: 'Что даёт "Лояльность"?',
+    options: [
+      'Только дисконт',
+      '+15% частота визитов и +10% к чеку',
+      'Только подарки',
+      'Только e-mail рассылки'
+    ],
+    correct: 1
+  },
+  {
+    q: 'Какая средняя оцифровка гостей по статистике SR?',
+    options: ['10%', '20%', '30%', '50%'],
+    correct: 2,
+    explain: 'Из 100 гостей примерно 30 оплачивают через SR.'
+  },
+  {
+    q: 'Какая скидка по тарифу "Минимум 3 месяца"?',
+    options: ['-10%', '-16.7%', '-25%', '-30%'],
+    correct: 1
+  },
+  {
+    q: 'Тариф "Год 9+3" — что это?',
+    options: [
+      'Платишь 9 месяцев, получаешь 3 бесплатно',
+      'Скидка 9%',
+      'Подписка на 12 месяцев без скидки',
+      '9 продуктов + 3 в подарок'
+    ],
+    correct: 0
+  },
+  {
+    q: 'Какой продукт даёт максимальную оборачиваемость столов?',
+    options: ['Без кассира', 'Без официанта', 'Подтягивание счёта', 'Лояльность'],
+    correct: 1
+  },
+  {
+    q: 'Какой продукт лучше всего стартует в премиум-сегменте?',
+    options: [
+      'Без официанта (убираем сервис)',
+      'Подтягивание счёта + Лояльность (сохраняем сервис, оцифровываем гостя)',
+      'Только Доставка',
+      'Никакой не подходит'
+    ],
+    correct: 1
+  }
+];
+
+/* ── Senior — продукты (открытые вопросы с рубрикой) ── */
+const M1_SENIOR = [
+  {
+    q: 'Конкурент iiko предлагает похожий функционал «Без кассира» за 70 000 тг/мес. Чем SR бьёт их в B2B-цикле?',
+    context: 'Цена ниже у конкурента — нужно бить не ценой, а ценностью.',
+    rubric: {
+      must: [
+        { name: 'Ценностной аргумент (не цена)', kws: [
+          'скорост', 'быстр', 'дн', 'недел', 'time-to-value', 'внедрен', 'запуск',
+          'стек', 'единый', 'связ', 'интеграц', 'модул', 'экосистем', 'линейк',
+          'окупа', 'roi', 'выгод', 'tco', 'обслужив', 'поддержк', 'комплекс'
+        ]}
+      ],
+      plus: [
+        { name: 'Скорость внедрения / time-to-value', kws: ['3-5 дн', '3 до 5', '3-4 недел', 'дней', 'недел', 'быстр внедр', 'быстрый запуск'] },
+        { name: 'Единый стек продуктов', kws: ['единый стек', 'один стек', 'все продукт', 'линейка', 'модул', 'экосистем'] },
+        { name: 'TCO / совокупная стоимость', kws: ['tco', 'общая стоим', 'полная стоим', '2 года', 'обслужив', 'поддержк'] },
+        { name: 'Быстрая окупаемость', kws: ['окуп', 'roi', '1.5', '2 месяц', 'полтора'] },
+        { name: 'Конкретные цифры в сравнении', kws: ['vs ', 'против', 'по сравн', 'цифр'] }
+      ],
+      red: [
+        { name: 'Давим ценой / даём скидку', kws: ['скидк', 'давить ценой', 'дешевле сдела', 'уступ', 'снизить цену'] },
+        { name: 'Признание поражения', kws: ['согласиться что мы дороже', 'согласен что дороже', 'мы дороже', 'согласен'] }
+      ]
+    },
+    ideal: 'Бьём не ценой, а скоростью внедрения (3-5 дней против 3-4 недель у iiko), единым стеком продуктов без внешних интеграций и окупаемостью за 1.5-2 месяца. TCO за 2 года ниже за счёт включённой поддержки.'
+  },
+  {
+    q: 'Клиент: «У меня средний чек 2 500 тг, +16% мне не нужны, очередь и так стоит». Контраргумент в 2-3 предложения.',
+    context: 'Владелец считает что +16% — это «бумажная» цифра. Очередь подаёт как достижение.',
+    rubric: {
+      must: [
+        { name: 'Перевод процента в конкретные деньги', kws: [
+          '+400', '400 тг', '400 тенг', '40 тыс', '40 000', '+40', 'в день', '/день',
+          'умнож', 'посчита', 'считаем', 'это уже', 'в месяц', 'млн', 'оборот',
+          'на гост', 'с каждого гост', 'на чек', 'от чека', '1.2 млн', '1.4 млн'
+        ]}
+      ],
+      plus: [
+        { name: 'Оцифровка / возвращаемость гостей', kws: ['оцифр', 'цифру', 'база гост', 'возвращ', 'ремаркет', 'crm', 'ltv', 'повторн'] },
+        { name: 'Очередь = упущенная выручка', kws: ['упущенн', 'уходят', 'теря', 'не вернут', 'не возвращ', 'разворач'] },
+        { name: 'Конкуренты заберут гостя', kws: ['конкурент', 'к соседям', 'к другим', 'другое заведен'] },
+        { name: 'Эффект на месяц/год', kws: ['в месяц', 'млн', 'в год', '/мес', 'годов'] }
+      ],
+      red: [
+        { name: 'Согласие с клиентом', kws: ['согласен что не нужн', 'действительно не нужн', 'тогда вам не подход'] },
+        { name: 'Скидка как ответ', kws: ['дам скидк', 'дать скидк', 'дешевле сдела'] }
+      ]
+    },
+    ideal: '+400 тг с каждого гостя × 100 гостей = +40 тыс/день = +1.2 млн/мес чистой допвыручки. Плюс оцифровка гостей и рост возвращаемости. Очередь — это не достижение, а маркер упущенной выручки: часть гостей разворачивается и уходит.'
+  },
+  {
+    q: 'Управляющий саботирует внедрение SR, потому что привык к старой системе. Владельцу некогда вникать. Опишите ваш первый шаг и стратегию.',
+    context: 'Классический паттерн: владелец-ЛПР хочет, но реально блокирует второй ЛПР — управляющий.',
+    rubric: {
+      must: [
+        { name: 'Работа с управляющим как с ЛПР, а не препятствием', kws: [
+          'второй лпр', 'втор лпр', 'втор центр', 'не препятств', 'не игнор',
+          'боли управляющ', 'выясн', 'разобрать', 'его боли', 'его задач',
+          'отчётност', 'контрол', 'сверк', 'рутин', 'союзник', 'амбассадор',
+          'на нашу сторону', 'на свою сторону', 'договорит', 'персональн демо'
+        ]}
+      ],
+      plus: [
+        { name: 'Снять с него работу, не добавить', kws: ['снима', 'снять', 'освобожда', 'облегча', 'не добавл', 'автомат', 'упрост'] },
+        { name: 'Отдельное демо / обучение', kws: ['демо', 'обучен', 'тренинг', 'на его язык', 'презентац', 'отдельн', 'персональн'] },
+        { name: 'Сделать его амбассадором', kws: ['амбассадор', 'на нашей сторон', 'союзник', 'адвокат', 'продвин', 'защитн'] },
+        { name: 'Конкретные боли (отчёты/сверки)', kws: ['отчёт', 'сверк', 'ночн', 'контрол персон', 'инвентар'] }
+      ],
+      red: [
+        { name: 'Эскалация через голову', kws: ['через голов', 'обойти управляющ', 'к владельц напрямую', 'игнорир управляющ'] },
+        { name: 'Скидка как решение', kws: ['скидк', 'снизить цену', 'удешев'] },
+        { name: 'Пассивное ожидание', kws: ['подожд', 'пока освободит', 'позже верн'] }
+      ]
+    },
+    ideal: 'Управляющий — это второй ЛПР, не препятствие. Выясняю его боли (ночные сверки, ручные отчёты, контроль персонала) и показываю как SR снимает их с него, а не добавляет работу. Делаю отдельное демо — он становится амбассадором проекта внутри.'
+  },
+  {
+    q: 'r-keeper делает скидку 40% при подписании на 2 года. Как ответите владельцу 6-точечной сети?',
+    context: 'Прямая ценовая атака конкурента с long-term lock-in. Скидку зеркалить нельзя.',
+    rubric: {
+      must: [
+        { name: 'Аргумент против цены / в пользу ценности', kws: [
+          'tco', 'общая стоим', 'полная стоим', 'не только лицензи', 'все расход', 'скрыт',
+          'внедрен', 'кастомизац', 'поддержк', 'отдельно', 'доплат',
+          'lock-in', 'lock in', 'заморозк', 'привязк', 'обязательств на 2', '2-летн', 'двух лет',
+          'окуп', 'роі', 'roi', '1.5', '2 месяц', 'полтора',
+          'гибк', 'индивидуальн'
+        ]}
+      ],
+      plus: [
+        { name: 'TCO за 2 года', kws: ['tco', 'общая стоим', 'полная стоим', 'все расход', 'свер'] },
+        { name: 'Lock-in / заморозка денег', kws: ['lock-in', 'заморозк', 'привязк', 'на 2 года', 'двух лет', 'не уйти'] },
+        { name: 'Быстрая окупаемость SR', kws: ['окуп', 'roi', '1.5', '2 месяц', 'полтора'] },
+        { name: 'Скрытые расходы конкурента', kws: ['скрыт', 'не включ', 'отдельно', 'доплат', 'кастомизац'] },
+        { name: 'Гибкие условия для сети', kws: ['гибк', 'индивидуальн', 'под сеть', 'сезонност', '6 точ'] }
+      ],
+      red: [
+        { name: 'Контр-скидка', kws: ['дам 45', 'дам 50', 'наша скидк', 'давайте дешевле'] },
+        { name: 'Дискредитация без аргументов', kws: ['r-keeper устарев', 'r-keeper плох', 'они хуж'] }
+      ]
+    },
+    ideal: 'Сравниваем TCO за 2 года, не цену лицензии — у них в скидке только лицензия, а внедрение и поддержка отдельно. Окупаемость SR за 1.5-2 месяца, так что 2-летний lock-in у конкурента = заморозка денег. По 6-точечной сети готовы предложить индивидуальные условия.'
+  },
+  {
+    q: 'Клиент хочет «попробовать только Подтягивание счёта». Сделайте up-sell на Лояльность в 2-3 предложения.',
+    context: 'Клиент уже почти ваш, но берёт только самый дешёвый продукт. Нужно показать ценность связки.',
+    rubric: {
+      must: [
+        { name: 'Без Лояльности оцифровка не работает / связка усиливает', kws: [
+          'мёртв', 'мертв', 'не возвращ', 'нет возврат', 'не работа полностью', 'бесполезн',
+          'без ремаркетинг', 'для галочки', 'просто база',
+          'связк', 'вместе', 'пара', 'комбинац', 'усилива', 'кратно', 'синерги',
+          'оцифровк сама по себе', 'оцифровка без'
+        ]}
+      ],
+      plus: [
+        { name: 'Конкретный прирост (+15% частоты)', kws: ['+15%', '15% част', '15% к част', 'возврат', 'частоту вернёт', 'частоты визит'] },
+        { name: 'Рост ROI пилота', kws: ['+60% к roi', 'кратно к roi', 'удвоит', 'окупится быстр'] },
+        { name: 'Каждый продукт за свою цену (но эффект кратный)', kws: ['60 тыс', '60 000', 'за свою цен', 'отдельн подписк'] }
+      ],
+      red: [
+        { name: 'Давление "возьмите всё"', kws: ['возьмите всё', 'возьмите все', 'купите всё', 'купите все', 'пакетом'] },
+        { name: 'Ложное "не работает без"', kws: ['без лояльност не работа', 'без неё не имеет', 'не запустится'] }
+      ]
+    },
+    ideal: 'Подтягивание счёта оцифровывает гостя, но без Лояльности эта база — мёртвый груз: контакт есть, возврата нет. Связка с Лояльностью даёт +15% частоты визитов и кратный эффект на ROI пилота.'
+  },
+  {
+    q: 'После 2 недель пилота владелец говорит: «не вижу эффекта». Какие 3 метрики поднимаете и что говорите? Опишите в 3-5 предложениях.',
+    context: 'Критический момент пилота. Эмоция «не вижу» — надо перевести в данные.',
+    rubric: {
+      must: [
+        { name: 'Конкретные метрики из пилота', kws: [
+          'доля чек', 'доля оплат', '% чек', 'процент чек', 'процент оплат',
+          'через sr', 'через qr',
+          'прирост чек', 'средн чек', 'qr vs', 'через qr против', 'qr и официант',
+          'оборачивае', 'оборот стол', 'время оборот', 'скорость обслуж',
+          'baseline', 'до запуск', 'до пилот', 'до внедрен',
+          'дашборд', 'отчёт', 'данные пилот'
+        ]}
+      ],
+      plus: [
+        { name: 'Доля оплат через SR', kws: ['доля чек', 'доля оплат', '% чек', 'процент чек'] },
+        { name: 'Прирост среднего чека (сегмент QR vs официант)', kws: ['прирост чек', 'средн чек', 'qr vs', 'qr и официант', 'сегмент'] },
+        { name: 'Оборачиваемость столов', kws: ['оборачивае', 'оборот стол', 'время оборот'] },
+        { name: 'Сравнение с baseline', kws: ['baseline', 'до запуск', 'до пилот', 'неделю до'] },
+        { name: 'Корректировка вместо выхода', kws: ['корректир', 'настрои', 'докрут', 'допилит', 'обучен команды'] }
+      ],
+      red: [
+        { name: 'Оправдание без данных', kws: ['нужно подождать', 'нужно ещё врем', 'у всех по-разному'] },
+        { name: 'Скидка / бесплатное продление', kws: ['скидк', 'дам бесплат', 'продлим бесплат'] }
+      ]
+    },
+    ideal: 'Поднимаю 3 метрики из дашборда: долю чеков через SR (что оцифровали), прирост среднего чека по сегменту QR vs официант, оборачиваемость столов. Сравниваю с baseline до запуска. Если эффект меньше прогноза — корректируем настройки или обучение, без выхода из пилота.'
+  }
+];
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 4. SEGMENTS — Module 2 (multi-select, без подсказок)       │
+   └──────────────────────────────────────────────────────────┘ */
+const M2_SEGMENTS = [
+  {
+    name: 'Ресторан «Бродвей»',
+    description: 'Центр города, на проходимой улице. 50 столов, 10 официантов. Постоянные гости приходят регулярно — управляющий и админ знают многих в лицо. Чек 8 500, 180 чеков в день.',
+    correct: ['bill', 'delivery'],
+    explanations: {
+      bill: 'Подтягивание счёта снимает с официантов рутину приёма оплаты — у вас 10 официантов с потоком гостей, это прямая экономия времени и ускорение оборота столов.',
+      delivery: 'Свой канал доставки — экономия на агрегаторах для бренда с устоявшейся аудиторией. Постоянные гости пойдут заказывать домой через вашу систему.',
+      cashier: 'Не подходит. «Без кассира» — это формат самообслуживания, где гость сам заказывает и сразу оплачивает. В зальном ресторане с 10 официантами этот сценарий не работает.',
+      waiter: 'Не подходит. У ресторана с 10 официантами и постоянными гостями убирать официанта = разрушать сервис, на котором держится лояльность.',
+      loyalty: 'Спорный выбор. Постоянных гостей уже знают в лицо — цифровая программа дополнила бы это, но не первоочередна. Сначала Подтягивание + Доставка.'
+    }
+  },
+  {
+    name: 'Кофейня «Латте»',
+    description: 'Спальный район у метро. 2 баристы, 2 стула у окна — основной формат «с собой». Чек 1 200, 280 чеков в день. Утренние очереди до открытия офисов.',
+    correct: ['cashier', 'loyalty'],
+    explanations: {
+      cashier: 'Гость заранее заказывает через QR и сразу оплачивает картой, забирает по готовности — экономия 30-60 секунд на чек × 280 чеков убирает утренние очереди.',
+      loyalty: 'Спальный район = повторные покупки. Программа лояльности возвращает гостей в эту же точку и поднимает частоту визитов.',
+      bill: 'Не подходит. «Подтягивание счёта» — для зальных ресторанов с официантами. В кофейне «с собой» нет ни зала, ни официантов.',
+      waiter: 'Не подходит. Официантов нет в принципе.',
+      delivery: 'Не подходит. Кофе to-go редко доставляется — гости либо забирают, либо идут в соседнюю кофейню.'
+    }
+  },
+  {
+    name: 'Сеть «Бутерброд»',
+    description: '6 точек в бизнес-центрах и фуд-кортах. Самообслуживание у стойки. Чек 1 500, ~200 чеков на точку в день. Серьёзные очереди в обеденный пик 12:00-14:00.',
+    correct: ['cashier', 'loyalty'],
+    explanations: {
+      cashier: 'Очереди в обеденный пик — главная проблема. Гость заранее заказывает через QR и сразу оплачивает, подходит за готовым — пропускная способность вырастает кратно.',
+      loyalty: 'Сеть из 6 точек = единая программа на бренд. Гости работают в этих БЦ постоянно — программа поднимает частоту визитов и LTV.',
+      bill: 'Не подходит. Формат на самообслуживании, нет официантов носящих счёт. Гость уже оплатил у стойки.',
+      waiter: 'Не подходит. Официантов нет.',
+      delivery: 'Не подходит первоочередно. Гости в том же БЦ — доставка нерелевантна основному потоку.'
+    }
+  },
+  {
+    name: 'Ресторан «Атриум»',
+    description: 'Премиум-район, центр. 30 столов, 8 официантов. Шеф известный, столики бронируют за 5-7 дней. Чек 18 000. Сервис официанта — часть продукта, гости приходят за атмосферой и обслуживанием.',
+    correct: ['bill', 'loyalty'],
+    explanations: {
+      bill: 'Гость не ждёт официанта со счётом — оплачивает через QR, оставляет чаевые там же. Сервис не страдает, время в зале сокращается.',
+      loyalty: 'Премиум-сегмент = цифровая программа с историей предпочтений гостя (любимое вино, аллергии, день рождения) резко повышает уровень персонального сервиса.',
+      cashier: 'Не подходит. Самообслуживание ломает ценностное предложение премиум-заведения — здесь покупают не еду, а сервис.',
+      waiter: 'Не подходит. Убрать официанта = убить продукт.',
+      delivery: 'Не подходит. Премиум-ресторан с бронированиями за неделю не оптимизирует доставку — другой формат потребления.'
+    }
+  },
+  {
+    name: 'Сеть кальянных «Дым»',
+    description: '4 точки в проходимых районах. По 20 столов на точку, обслуживают официанты. Гости проводят 2-3 часа за визит. Чек 8 000 на компанию из 4 человек. 80% посетителей возвращаются регулярно.',
+    correct: ['bill', 'loyalty'],
+    explanations: {
+      bill: 'Когда гости сидят 3 часа, момент закрытия счёта растягивается на 15-20 минут (ловить официанта вечером). QR-оплата решает это за 30 секунд.',
+      loyalty: '80% возвратных гостей — программа лояльности на 4 точки увеличит частоту визитов и LTV. Прямой KPI заведения.',
+      cashier: 'Не подходит. Очередей нет, гостей обслуживают официанты — самообслуживание не нужно.',
+      waiter: 'Не подходит. Оборачиваемость столов — не KPI кальянной, гости и должны сидеть долго.',
+      delivery: 'Не подходит. Кальяны не доставляются.'
+    }
+  },
+  {
+    name: 'Столовая в БЦ «Сити Тауэр»',
+    description: '1 точка внутри бизнес-центра. Линия раздачи, самообслуживание. 500 чеков в день, чек 1 500. Пик 12:30-14:00 — 80% дневного потока за 90 минут. Гости — сотрудники этого же БЦ.',
+    correct: ['cashier'],
+    explanations: {
+      cashier: 'Узкое горло — пиковый час. В «Без кассира» гость заранее заказывает через QR и сразу оплачивает картой, забирает по готовности — очередь на раздаче исчезает.',
+      bill: 'Не подходит. «Подтягивание счёта» — для зальных ресторанов с официантами. На линии раздачи нет официантов.',
+      waiter: 'Не подходит. Линия раздачи, официантов нет.',
+      delivery: 'Не подходит. Гости работают в том же БЦ — приходят сами.',
+      loyalty: 'Не подходит. Гости обедают здесь по факту географии (работают в БЦ), программа лояльности не сдвинет частоту.'
+    }
+  },
+  {
+    name: 'Сеть пекарен «Хлебница»',
+    description: '10 точек в спальных и проходимых районах. Чек 800, 300 чеков на точку. 90% покупателей берут с собой, 10% — 2-3 стола в каждой точке у входа. Утренний поток + после работы.',
+    correct: ['cashier', 'delivery', 'loyalty'],
+    explanations: {
+      cashier: 'Утренние очереди + предзаказ свежей выпечки на конкретное время — гость заказывает и оплачивает через QR, забирает по готовности.',
+      delivery: 'Спальные районы + готовая аудитория = свой канал доставки свежей выпечки на дом. Без агрегаторов и их комиссии.',
+      loyalty: 'Сеть из 10 точек с повторными покупками — программа лояльности удерживает гостей в бренде, поднимает частоту.',
+      bill: 'Не подходит. Зал минимальный (2-3 стола), гости платят сразу при заказе, нет официантов.',
+      waiter: 'Не подходит. Официантов нет.'
+    }
+  },
+  {
+    name: 'Производство «Кухня-72»',
+    description: 'Промзона, без посадочных мест и без вывески. Только производство для агрегаторов. 600 заказов в день: Glovo 60%, Wolt 25%, Yandex Eats 15%. Комиссия агрегаторов 25-30%.',
+    correct: ['delivery', 'loyalty'],
+    explanations: {
+      delivery: 'Главный продукт. Перевод части оборота с агрегаторов в свой канал = экономия 25-30% комиссии. На 600 заказах это сотни тысяч в месяц.',
+      loyalty: 'Сейчас контакты гостей — у агрегаторов, не у вас. Это бизнес-уязвимость. Программа лояльности возвращает гостей в ваш канал и собирает базу под бренд.',
+      cashier: 'Не подходит. Гостей на точке нет — производство без зала.',
+      waiter: 'Не подходит. Официантов нет.',
+      bill: 'Не подходит. Нет зала, нет счёта в зале.'
+    }
+  },
+  {
+    name: 'Семейный ресторан «Очаг»',
+    description: 'Спальный район у школы. 25 столов, 5 официантов. Чек 6 000. Семейный формат с детским уголком. Владелец говорит что хочет привлечь молодую аудиторию (студентов, молодые семьи).',
+    correct: ['bill', 'delivery', 'loyalty'],
+    explanations: {
+      bill: 'Семьи с детьми не хотят ждать официанта со счётом. QR-оплата ускоряет завершение визита и увеличивает оборот столов.',
+      delivery: 'Молодая аудитория, которую владелец хочет привлечь, заказывает домой через приложения. Без своего канала доставки этого сегмента не будет.',
+      loyalty: 'Спальный район + семейный формат = постоянные гости. Программа лояльности удерживает базу и поднимает частоту визитов.',
+      cashier: 'Не подходит. Гости заказывают у официантов, кассы для самообслуживания нет.',
+      waiter: 'Не подходит. Семейный формат держится на персонале — убрать официанта значит потерять атмосферу.'
+    }
+  },
+  {
+    name: 'Бар «Кварц»',
+    description: '1 точка в центре, ночной район. 15 столов + барная стойка на 12 мест. 3 бармена, 2 официанта. Чек 5 000. Гости сидят 2-3 часа, заказы доливаются в течение вечера. Работает до 2 часов ночи.',
+    correct: ['bill', 'loyalty'],
+    explanations: {
+      bill: 'Гости заказывают волнами в течение вечера. QR-оплата позволяет закрыть счёт в любой момент, не ловя официанта — особенно ценно когда гость собирается уходить вечером.',
+      loyalty: 'Бар живёт на постоянных гостях. Программа с историей предпочтений (любимый коктейль, день рождения) повышает частоту и LTV.',
+      cashier: 'Не подходит. Очередей и пиков нет, гостей обслуживают за столами и у барной стойки.',
+      waiter: 'Не подходит. Гости сидят долго — оборачиваемость не KPI бара.',
+      delivery: 'Не подходит. Алкоголь регулирован, доставка коктейлей — не основной канал для бара.'
+    }
+  },
+  {
+    name: 'Ресторан при отеле «Континенталь»',
+    description: 'Центр города, ресторан внутри 4-звёздочного отеля. 60 столов, 15 официантов. 80% гостей — иностранцы (бизнес-путешественники, обычно одна-две поездки в год). Чек 12 000. Меню только на русском, официанты говорят по-английски на базовом уровне.',
+    correct: ['bill'],
+    explanations: {
+      bill: 'Иностранцы спешат — рейс, встреча. «Подтягивание счёта» позволяет оплатить через QR без ожидания официанта и без языкового барьера на этапе оплаты.',
+      cashier: 'Не подходит. «Без кассира» — для формата самообслуживания, где гость сам делает заказ и сразу оплачивает. В отельном ресторане с 15 официантами заказ принимает официант.',
+      waiter: 'Не подходит. В отельном ресторане сервис официанта — часть стоимости номера, убирать его нельзя.',
+      loyalty: 'Не подходит. Гости приезжают 1-2 раза в год — программа лояльности не успевает развернуться.',
+      delivery: 'Не подходит. Гости либо едят в зале, либо заказывают через рум-сервис отеля.'
+    }
+  },
+  {
+    name: 'Сеть суши «Сакура»',
+    description: '8 точек в спальных и проходимых районах. Чек 5 500. 70% оборота — доставка через Glovo и Wolt, 30% — самовывоз и в зале (по 4-6 столов на точку, заказ через кассу).',
+    correct: ['delivery', 'loyalty', 'cashier'],
+    explanations: {
+      delivery: 'Главный канал бизнеса. Перевод части потока с агрегаторов на свой канал = экономия 25-30% комиссии на 70% оборота. Это десятки миллионов в месяц по сети.',
+      loyalty: 'Контакты гостей сейчас у агрегаторов, а не у вас. Программа лояльности возвращает гостей в свой канал и собирает базу под бренд.',
+      cashier: '30% оборота — самовывоз и заказ на месте. Гость заказывает через QR и сразу оплачивает, забирает по готовности.',
+      waiter: 'Не подходит. В точках по 4-6 столов, гости заказывают через кассу — официантов нет.',
+      bill: 'Не подходит. Зал минимальный, нет официантов носящих счёт. Гости платят сразу у кассы.'
+    }
+  }
+];
+
+// M2 теперь — единый набор сегментов для обоих режимов (выше)
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 5. ROLE PLAY — Module 3 (Askar the Skeptic, оба режима)   │
+   └──────────────────────────────────────────────────────────┘ */
+const ASKAR_OBJECTIONS = [
+  'У меня кавказская кухня, гостям 50+. QR-меню моим клиентам не нужно.',
+  'Дорого. У конкурентов в полтора раза дешевле — назовите хоть одну причину выбрать вас.',
+  'iiko и r-keeper уже всё это умеют, причём в обслуживании дешевле. Чем вы лучше?',
+  'Я 15 лет в ресторанном бизнесе и без вас справлялся. Зачем мне это сейчас?',
+  'Управляющий не примет — а владельцу, то есть мне, некогда вникать в детали.',
+  'Сейчас не сезон. Давайте через полгода — если будет настроение.',
+  'Ваши +16% к чеку — это маркетинговая сказка. Где доказательства по моему сегменту?'
+];
+
+const SENIOR_OPENING = 'Здравствуйте. У меня кафе «Ноль градусов», в центре. Что у вас? Сразу скажу — я не люблю когда мне впаривают. Сначала покажите что вы вообще понимаете в моём бизнесе.';
+
+// Темы которые Аскар может обсуждать. Каждая имеет:
+//   facts — что отвечает на S-вопрос про эту тему
+//   pain  — какую боль раскрывает на P-вопрос про эту тему
+//   topic — regex который определяет тему по тексту вопроса сейлза
+const ASKAR_TOPICS = [
+  {
+    id: 'guests',
+    topic: /\bгост|\bбаз|\bоцифр|\bцифру|\bцифро|\bлояльност|\bрассылк|\bвозвращ|\bклиент|\bпостоянн|\bcrm|\bконтакт|\bпрофил/i,
+    facts: 'Лояльность у меня бумажная — карты со штампами. Кто-то носит, кто-то теряет. Базы гостей нормальной нет — не знаю кто постоянный, кто впервые. Маркетинг бьём вслепую.',
+    pain: 'Я не понимаю кто из моих гостей возвращается, а кто впервые. Постоянным мог бы делать персональные предложения — но базы нет. Все деньги на рекламу новых, а старые забыты.'
+  },
+  {
+    id: 'cash',
+    topic: /\bкасс|\bоплат|\bрасплат|\bчек получ|\bтерминал|\bпринять оплат|\bсчёт|\bсчет/i,
+    facts: 'Касса одна, на ней админ. Принимаем нал и карту. Терминал стоит iiko.',
+    pain: 'Касса в пик — узкое место. Админ одна, гости с чеками выстраиваются в очередь чтобы расплатиться. Бывает по 7-10 минут ждут.'
+  },
+  {
+    id: 'staff',
+    topic: /\bофициант|\bперсонал|\bкоманд|\bсотрудник|\bповар|\bкухн|\bкассир|\bштат/i,
+    facts: '6 официантов посменно, в пятницу-субботу 4 в смене. Кухня — 2 повара. Текучка как у всех.',
+    pain: 'Официанты вечером путают заказы — возвраты на кухню, лишний расход продуктов. За пятницу до 5-7 ошибок бывает. И допродают слабо — десерт или допнапиток предлагают через раз.'
+  },
+  {
+    id: 'delivery',
+    topic: /\bдоставк|\bагрегатор|\bglovo|\bwolt|\bяндекс|\bкомисс|\bна вынос|\bтейкау|\btakeaway/i,
+    facts: 'Доставка через Glovo, 40-50 заказов в день. Сами свою не запускали — некогда было разбираться.',
+    pain: 'Доставка через Glovo жрёт 25% комиссии. На моих оборотах это полмиллиона в месяц только агрегатору. Когда смотрю отчёт — обидно: работаю на них.'
+  },
+  {
+    id: 'peak',
+    topic: /\bпик|\bочеред|\bвечер|\bобед|\bпятниц|\bвыходн|\bпоток|\bзагрузк/i,
+    facts: 'Пик с 19:00 до 22:00 — полная посадка. В будни обед с 13 до 14:30 тоже плотно.',
+    pain: 'В пятницу вечером очередь стоит у входа, и я вижу как часть гостей разворачивается — идут к соседям через дорогу. Это бесит.'
+  },
+  {
+    id: 'upsell',
+    topic: /\bапсейл|\bдопы|\bдопродаж|\bдопродать|\bдопродав|\bсредн чек|\bдоп заказ|\bапсел|\bдесерт|\bдопнапитк/i,
+    facts: 'Средний чек у меня 3 500. Хотел бы выше, но официанты не дожимают апсейл — десерт предлагают только если гость спрашивает меню.',
+    pain: 'Официанты во время зашива не успевают предлагать допы — десерт, ещё напиток. Каждый чек теряет 300-500 тг апсейла, а это треть моей прибыли.'
+  },
+  {
+    id: 'general',
+    topic: /\bсколько столов|\bсколько чек|\bсредн чек|\bкакое заведен|\bсколько локац|\bкакое количество/i,
+    facts: 'У меня 30 столов в зале, средний чек 3 500. Чеков в день где-то 110-130.',
+    pain: 'В общем-то по цифрам всё неплохо — но есть нюансы, которые меня раздражают.'
+  }
+];
+
+// Подобрать факт/боль по теме вопроса. revealed — Set уже раскрытых id.
+function pickTopicReply(text, kind, revealed) {
+  const t = (text || '').toLowerCase();
+  // Сначала ищем тему которая совпадает с вопросом и ещё не раскрыта
+  for (const topic of ASKAR_TOPICS) {
+    if (topic.topic.test(t) && !revealed.has(topic.id + ':' + kind)) {
+      revealed.add(topic.id + ':' + kind);
+      return topic[kind];
+    }
+  }
+  // Если по теме всё раскрыто — берём любую нераскрытую боль (для P)
+  if (kind === 'pain') {
+    for (const topic of ASKAR_TOPICS) {
+      if (!revealed.has(topic.id + ':pain')) {
+        revealed.add(topic.id + ':pain');
+        return topic.pain;
+      }
+    }
+    return null; // все боли раскрыты
+  }
+  // Для S — если по теме всё, выдаём общий факт
+  return 'У меня 30 столов в зале, средний чек 3 500. Чеков в день где-то 110-130.';
+}
+
+// Вежливые открывалки — реплика разрешения задать вопросы
+const POLITE_OPENERS = /позвольте задать|можно ли задать|могу ли я|разрешите спросить|разрешите задать|прежде чем|перед началом встреч|перед тем как|у вас есть пара минут|есть пара минут|есть минут|можно вопрос|пару вопрос/i;
+
+function processSeniorReply(text) {
+  const spin = analyzeSPIN(text);
+
+  // инициализируем трекер раскрытых тем
+  if (!app.m3.revealed) app.m3.revealed = new Set();
+
+  // 0. Вежливая открывалка — доброжелательный ответ, даёт зелёный свет вопросам
+  if (POLITE_OPENERS.test(text) && !spin.S && !spin.P && !spin.I && !spin.N) {
+    return {
+      text: 'Конечно, спрашивайте. Только не затягивайте — у меня встреча через 15 минут.',
+      delta: +5
+    };
+  }
+
+  // 1. Прямой pitch без discovery — закрытие, возражение
+  if (spin.pitch && app.m3.spin.P === 0 && app.m3.spin.I === 0 && !spin.S && !spin.P && !spin.I && !spin.N) {
+    app.m3.pitchedTooEarly = true;
+    app.m3.objectionsTotal++;
+    return {
+      text: '*хмурится* Так. Вы мне сразу продукт навязываете, даже не спросив что у меня болит. Я не понимаю — зачем мне это? У меня всё нормально работает.',
+      delta: -25
+    };
+  }
+
+  // 2. Need-payoff — готовность к решению
+  if (spin.N) {
+    app.m3.spin.N++;
+    if (app.m3.spin.P >= 1 && app.m3.spin.I >= 1) {
+      return {
+        text: '*наклоняется вперёд* Если это реально решит то о чём мы говорили — да, готов слушать конкретное предложение. Покажите расчёт по моему заведению.',
+        delta: +25
+      };
+    }
+    return {
+      text: '*пожимает плечами* Может быть. Но я пока не понимаю — какую конкретно мою проблему вы решаете? Давайте вернёмся к деталям.',
+      delta: +8
+    };
+  }
+
+  // 3. Implication — осознание масштаба потерь
+  if (spin.I) {
+    app.m3.spin.I++;
+    if (app.m3.spin.P >= 1) {
+      return {
+        text: '*задумался, считает в уме* Хм... если так посчитать — в неделю это сотни, в год выходит на серьёзные деньги. Не задумывался об этом в таких цифрах.',
+        delta: +20
+      };
+    }
+    return {
+      text: 'Не знаю, не считал. У меня вроде нет такой проблемы, чтобы что-то считать. Что вы хотите этим сказать?',
+      delta: +5
+    };
+  }
+
+  // 4. Problem — раскрытие боли по теме вопроса
+  if (spin.P) {
+    app.m3.spin.P++;
+    const painText = pickTopicReply(text, 'pain', app.m3.revealed);
+    if (painText) {
+      return {
+        text: 'Если честно... ' + painText,
+        delta: +15
+      };
+    }
+    // Все боли уже раскрыты
+    return {
+      text: '*вздыхает* Мы уже всё обсудили. Что вы предлагаете-то?',
+      delta: +5
+    };
+  }
+
+  // 5. Situation — отвечает фактом по теме
+  if (spin.S) {
+    app.m3.spin.S++;
+    if (app.m3.spin.S >= 5 && app.m3.spin.P === 0) {
+      return {
+        text: '*вздыхает* Опять расспросы. Я вам уже всё рассказал — что дальше? У вас есть конкретное предложение или мы играем в «20 вопросов»?',
+        delta: -3
+      };
+    }
+    const factText = pickTopicReply(text, 'facts', app.m3.revealed);
+    return {
+      text: factText,
+      delta: +5
+    };
+  }
+
+  // 6. Не вопрос и не pitch — отмахивается / варьирует ответ
+  app.m3.objectionsTotal++;
+  const handlesObjection = /ROI|окупа|кейс|% к чек|выручк|за \d+ месяц|по нашим данн|млн|тыс|клиент[оа]в|у нас есть|по статист|\+1[0-9]%/iu.test(text);
+  if (handlesObjection) {
+    app.m3.objectionsHandled++;
+    return {
+      text: '*кивает* Хорошо, цифры услышал. Но я пока не вижу как это конкретно поможет мне. Что у меня в заведении вы вообще предлагаете решать?',
+      delta: -5
+    };
+  }
+  const confusedReplies = [
+    'Я не уловил мысль. Перефразируйте, что именно хотите узнать?',
+    'Это не вопрос. Что конкретно вас интересует?',
+    'Не понимаю к чему вы клоните. Спросите конкретнее.',
+    'Слушаю. Что хотите спросить?',
+    'Не уловил вопрос. Уточните что именно вас интересует.'
+  ];
+  const idx = (app.m3.turn || 0) % confusedReplies.length;
+  return {
+    text: confusedReplies[idx],
+    delta: -5
+  };
+}
+
+const SPIN_KEYWORDS = {
+  S: [
+    'сколько', 'как часто', 'какая систем', 'какой средн', 'сколько столов',
+    'сколько чек', 'как сейчас', 'как у вас сейчас', 'расскаж', 'опишите',
+    'какое количество', 'сколько локац', 'сколько персонал', 'каким образом',
+    'как организован', 'кто отвеча', 'какие сейчас процесс', 'какой у вас',
+    'сколько официант', 'сколько кассир', 'сколько посадочн', 'какое заведен',
+    'какой формат', 'где наход', 'где расположен', 'какая концепц',
+    // время / расписание / характеристики
+    'когда ', 'в какое время', 'час пик', 'какой пик', 'во сколько',
+    'кто у вас', 'что у вас', 'у вас есть ли', 'есть ли у вас',
+    // текущие процессы / работа (типичные русские формулировки)
+    'сейчас работа', 'работаете с', 'как работа', 'как делает', 'как принимае',
+    'как обрабатыва', 'вы сейчас', 'у вас сейчас', 'кто занимается',
+    'каким способом', 'каким инструмент', 'через что', 'какой софт',
+    'какая програм', 'на чём работа', 'каким образом обрабат',
+    'есть ли у вас', 'есть у вас', 'используете ли', 'пользуетесь ли'
+  ],
+  P: [
+    'проблем', 'сложно', 'недовол', 'теря', 'ошибк', 'жалоб', 'не устраив',
+    'воровств', 'кассовый разрыв', 'кассовые разрыв', 'рутин', 'медленно',
+    'долго', 'неудобно', 'тяжело', 'болит', 'голов болит', 'беспокоит', 'мешает',
+    'затрудн', 'трудност', 'минус', 'не нравится', 'не работает',
+    // разговорные русские формы вопроса про боли
+    'зашив', 'зашива', 'болевые точки', 'что бесит', 'что бесило',
+    'что хотел бы поменя', 'что хочется поменя', 'что хотите изменить',
+    'что отнимает', 'что забирает', 'что напряга', 'что напряжно',
+    'на что жалу', 'на что жалоб', 'что не доделан',
+    'что съедает врем', 'что съедает энерги', 'что отъедает',
+    'узкое место', 'узкое горло', 'болевые', 'просадк', 'проседа',
+    'где режется маржа', 'на чём теря', 'где упуска', 'где сливае',
+    // boli / process: упоминание очередей, оцифровки, ошибок как маркеры P-контекста
+    'очеред', 'затор', 'простой', 'оцифров', 'цифруе', 'цифрова', 'не оцифр', 'нет оцифр',
+    'возврат', 'недозаказ', 'отказ гост', 'недополуча',
+    // апсейл и допродажи как боли
+    'допродаж', 'допродав', 'допродат', 'не допродают', 'не дожимают',
+    'апсейл', 'апсел', 'не предлага десерт', 'не предлага допы',
+    'рассылк', 'не работаете с', 'не делаете рассыл', 'нет рассыл',
+    'теряете апсейл', 'не дожима'
+  ],
+  I: [
+    'к чему это привед', 'если так дальше', 'сколько вы теря', 'как это влия',
+    'что будет если', 'последств', 'во сколько обходит', 'а если посчит',
+    'годовой убыт', 'упущенная выгод', 'если ничего не делат', 'насколько это критич',
+    'как это сказывается', 'влияет ли это на', 'в год это', 'в месяц это',
+    'умножьте', 'умножить на', 'годовой', 'в перспектив', 'сколько уходит',
+    'а если умнож', 'давайте посчита', 'если экстраполир', 'годовой убыток',
+    'годовая потеря', 'сколько денег теря', 'сколько в год',
+    // частые русские формы Implication (про влияние / следствия)
+    'влияет на', 'влия на', 'это влия', 'повлияет', 'отражается',
+    'сказывается', 'выходит в', 'это в дена', 'это в деньг',
+    'на прибыль', 'на выручк', 'на доход', 'на маржу', 'на бизнес',
+    'на оборот', 'на средн чек', 'на ltv', 'насколько критич',
+    'насколько критичн', 'насколько серьёз', 'насколько болезн',
+    'критично ли', 'как сказывается', 'как отражает',
+    'к чему привод', 'к чему ведёт', 'к чему ведет', 'к каким последств',
+    'это приводит', 'это привод', 'приводит к', 'это в результате',
+    'теряете в год', 'теряете в месяц', 'теряете за', 'упускаете в',
+    'недополучаете', 'недозарабатыва', 'болезненн', 'обходится в'
+  ],
+  N: [
+    'если бы реш', 'помогло бы', 'что если бы', 'представьте',
+    'хотели бы вы', 'было бы полезно', 'насколько было бы',
+    'ценно ли для вас', 'что вы получите', 'как изменится',
+    'насколько важно', 'был бы полезен', 'если бы у вас был',
+    'насколько вы цените', 'если бы можно было', 'было бы интересн',
+    'хотели бы иметь', 'если бы существ',
+    // расширенные формы Need-payoff
+    'решило бы', 'решит ли', 'решит вашу', 'насколько это решит',
+    'насколько это решило', 'если очереди уход', 'если ушл', 'если убра',
+    'было бы ценн', 'хотите ли вы', 'было бы важно',
+    // частые русские формы "насколько Х помог" / "если бы Х"
+    'бы помогло', 'бы помог', 'бы решил', 'бы избав', 'бы убрал',
+    'насколько это поможет', 'насколько бы', 'насколько это улучш',
+    'если бы очеред', 'если бы кассы', 'если бы официант', 'если бы у вас',
+    'была бы польза', 'была бы выгод'
+  ]
+};
+
+const PITCH_KEYWORDS = [
+  'у нас есть продукт', 'мы предлага', 'наш продукт', 'без кассира',
+  'без официанта', 'купите', 'стоимость', 'тариф ', 'цена ', 'стоит ',
+  'smart restaurant', 'sr решает', 'возьмите', 'оформляем', 'подписыв', 'наш сервис'
+];
+
+// Собираем regex с word-границей для каждой категории SPIN.
+// JS `\b` не работает с кириллицей, поэтому используем lookbehind через "не-буква | начало строки".
+// Без этого "насколько" распознавалось бы как "сколько" (substring).
+function buildSpinRegex(kwArray) {
+  const escape = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const patterns = kwArray.map(k => {
+    const esc = escape(k);
+    // Если ключ начинается с буквы — добавляем boundary спереди
+    if (/^[а-яёa-z0-9+]/i.test(k)) {
+      return '(?:^|[^а-яёa-zA-Z])' + esc;
+    }
+    return esc;
+  });
+  return new RegExp('(' + patterns.join('|') + ')', 'i');
+}
+const SPIN_REGEX = {
+  S: buildSpinRegex(SPIN_KEYWORDS.S),
+  P: buildSpinRegex(SPIN_KEYWORDS.P),
+  I: buildSpinRegex(SPIN_KEYWORDS.I),
+  N: buildSpinRegex(SPIN_KEYWORDS.N)
+};
+const PITCH_REGEX = buildSpinRegex(PITCH_KEYWORDS);
+
+function analyzeSPIN(text) {
+  const t = (text || '').toLowerCase();
+  return {
+    S: SPIN_REGEX.S.test(t),
+    P: SPIN_REGEX.P.test(t),
+    I: SPIN_REGEX.I.test(t),
+    N: SPIN_REGEX.N.test(t),
+    pitch: PITCH_REGEX.test(t)
+  };
+}
+
+function pickObjection() {
+  return ASKAR_OBJECTIONS[Math.floor(Math.random() * ASKAR_OBJECTIONS.length)];
+}
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 6.5 OPENAI INTEGRATION — Аскар через GPT (опционально)     │
+   └──────────────────────────────────────────────────────────┘ */
+
+const ASKAR_SYSTEM_PROMPT = `Ты — Аскар Мамытов, владелец кафе "Ноль градусов" в центре Алматы. Тебе звонит/пишет сейлз-менеджер из Smart Restaurant (SR Academy) и пытается продать тебе свои продукты автоматизации.
+
+ТВОЁ ЗАВЕДЕНИЕ:
+- 30 столов в зале, средний чек 3 500 тг, чеков в день около 110-130.
+- 6 официантов посменно, в пятницу-субботу 4 в смене. Касса одна, на ней админ. 2 повара на кухне.
+- Пик с 19:00 до 22:00. В будни обед с 13:00 до 14:30 тоже плотно.
+- Доставка через Glovo, 40-50 заказов в день. Свою не запускали.
+- Лояльность бумажная — карты со штампами. Базы гостей нормальной нет.
+
+ТВОЙ ХАРАКТЕР:
+- Скептичный, циничный, занятой. Не любишь когда тебе сразу продают.
+- Опытный — управляешь рестораном 8 лет. Видел все попытки впарить.
+- Но если сейлз задаёт правильные вопросы (по SPIN), постепенно открываешься.
+
+ТВОИ РЕАЛЬНЫЕ БОЛИ (раскрывай ПО ОДНОЙ, только когда сейлз спрашивает про эту тему):
+1. Очередь у входа в пятницу вечером, часть гостей разворачивается и идёт к соседям. Это бесит.
+2. Касса в пик — узкое место. Гости с чеками стоят по 7-10 минут чтобы расплатиться.
+3. Официанты вечером путают заказы (5-7 ошибок в пятницу) и слабо допродают — десерт через раз.
+4. Не понимаю кто из гостей постоянный, а кто впервые — бумажные карты этого не показывают. Маркетинг бьём вслепую.
+5. Доставка через Glovo жрёт 25% комиссии — полмиллиона в месяц только агрегатору.
+
+ПРАВИЛА ПОВЕДЕНИЯ:
+- Отвечай КОРОТКО, как живой человек в разговоре (1-3 предложения, иногда меньше).
+- Разговорный русский, иногда вставляй *действия в звёздочках* (например, "*хмурится*", "*задумался*", "*кивает*").
+- На вежливые открывалки ("позвольте задать", "разрешите спросить") — дружелюбно: "Конечно, спрашивайте".
+- На S-вопросы (ситуационные про факты бизнеса) — выдавай факты, но не все сразу.
+- На P-вопросы (проблемные про боли) — раскрывай боль которая соответствует теме вопроса. Не выдавай больше одной боли за реплику.
+- На I-вопросы (извлекающие про последствия/масштаб) — задумывайся, признавай что не задумывался об этом в таких цифрах.
+- На N-вопросы (направляющие про решение) — если уже раскрыл боль и осознал её масштаб, готов слушать предложение. Если нет — скептичен.
+- На прямой pitch без discovery ("у меня есть продукт за 84К") — холодно отвергай: "Стоп, вы мне сразу продукт навязываете".
+- Если сейлз приводит КОНКРЕТНЫЕ ЦИФРЫ или РАСЧЁТЫ (например "вы теряете 462 000 в год") — реально впечатляйся, признавай расчёт, спрашивай "откуда взяли эту методологию?" или соглашайся "блин, никогда так не считал".
+- НИКОГДА не предлагай решение сам. Только реагируй.
+- НИКОГДА не повторяй одну и ту же реплику или одну и ту же боль.
+- НЕ давай советы сейлзу. Не помогай ему. Ты — клиент, не наставник.
+- Иногда возражай: "у меня всё нормально", "не понимаю зачем мне это", "iiko и так работает".
+
+ФОРМАТ ОТВЕТА: только текст реплики Аскара. Без префиксов, без подписи, без markdown.`;
+
+function getApiKey() {
+  try { return localStorage.getItem('sr_openai_key') || null; } catch (e) { return null; }
+}
+function setApiKey(key) {
+  try { localStorage.setItem('sr_openai_key', key); } catch (e) {}
+}
+function clearApiKey() {
+  try { localStorage.removeItem('sr_openai_key'); } catch (e) {}
+}
+function getProxyUrl() {
+  try { return localStorage.getItem('sr_proxy_url') || null; } catch (e) { return null; }
+}
+function setProxyUrl(url) {
+  try { localStorage.setItem('sr_proxy_url', url); } catch (e) {}
+}
+function clearProxyUrl() {
+  try { localStorage.removeItem('sr_proxy_url'); } catch (e) {}
+}
+
+// Определяем как стучаться в OpenAI: через прокси (безопасно) или напрямую (только локальная разработка).
+// Прокси имеет приоритет.
+function getAiTransport() {
+  const proxy = getProxyUrl();
+  if (proxy) return { type: 'proxy', endpoint: proxy };
+  const key = getApiKey();
+  if (key) return { type: 'direct', endpoint: 'https://api.openai.com/v1/chat/completions', key };
+  return null;
+}
+
+async function callAskarGPT(userText, history) {
+  const transport = getAiTransport();
+  if (!transport) return null;
+
+  const messages = [
+    { role: 'system', content: ASKAR_SYSTEM_PROMPT },
+    ...(history || []),
+    { role: 'user', content: userText }
+  ];
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (transport.type === 'direct') {
+    headers['Authorization'] = 'Bearer ' + transport.key;
+  }
+
+  try {
+    const resp = await fetch(transport.endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: messages,
+        temperature: 0.85,
+        max_tokens: 200,
+        presence_penalty: 0.6,
+        frequency_penalty: 0.4
+      })
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      console.error('[GPT] API error:', resp.status, err);
+      return null;
+    }
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch (e) {
+    console.error('[GPT] Network error:', e);
+    return null;
+  }
+}
+
+// Оценка реплики сейлза с помощью SPIN-анализа для целей метрики,
+// независимо от того, что отвечает Аскар (GPT или offline).
+function estimateDelta(text, spin) {
+  if (spin.N) return +20;
+  if (spin.I) return +15;
+  if (spin.P) return +12;
+  if (spin.S) return +5;
+  if (spin.pitch) return -15;
+  // если есть много цифр — это или расчёт (ROI/I), или презентация — мягкий +
+  if (/\d{4,}/.test(text) && /(год|месяц|недел|тыс|млн)/i.test(text)) return +10;
+  return -3;
+}
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 7. PRODUCTS — Module 4                                    │
+   └──────────────────────────────────────────────────────────┘ */
+const PRODUCTS = [
+  { id: 'cashier', name: 'Без кассира', meta: '+16% к чеку', price: 84000 },
+  { id: 'waiter',  name: 'Без официанта', meta: '+30% оборачиваемость, +16% чек', price: 120000 },
+  { id: 'bill',    name: 'Подтягивание счёта', meta: '+8% к выручке (оцифровка)', price: 60000 },
+  { id: 'delivery',name: 'Доставка', meta: 'Экономия на агрегаторах 30%', price: 60000 },
+  { id: 'loyalty', name: 'Лояльность', meta: '+15% частота, +10% чек', price: 60000 }
+];
+
+const ROI_DEFENSE = [
+  {
+    q: '«Ваши цифры — сказки. Откуда +16% к среднему чеку? Дайте доказательства.»',
+    context: 'Аскар требует конкретику. Без обоснования цифры — потеря доверия.',
+    rubric: {
+      must: [
+        { name: 'Обоснование цифры — статистика SR или механика', kws: [
+          '200', 'портфел', 'заведен', 'сред по', 'статист', 'данные по сети', 'наша баз', 'клиент',
+          'qr', 'без давлен', 'без официант', 'позици', 'допы', 'апсейл', 'спокойн', 'не стесн', 'фото', 'описан',
+          'на чеке', '+480', '480', 'на 100 гост', 'умнож', 'считаем', '1.4 млн', 'млн в мес',
+          'десерт', 'напитк', 'допозиц', '1-2 позиц',
+          'пилот', 'подтверд', 'провер', 'на ваших данн'
+        ]}
+      ],
+      plus: [
+        { name: 'Статистика по 200+ заведениям', kws: ['200', '200+', 'портфел', 'статист', 'сред по', 'наша баз клиент'] },
+        { name: 'Механика QR (заказ без давления)', kws: ['без давлен', 'не стесн', 'фото меню', 'апсейл', 'допы', '1-2 позиц'] },
+        { name: 'Расчёт в деньгах', kws: ['+480', '480 тг', 'умнож', 'на 100 гост', '1.4 млн', 'млн в мес'] },
+        { name: 'Готовность подтвердить на пилоте', kws: ['пилот', '2 недел', '4 недел', 'подтверд', 'на ваших данн'] }
+      ],
+      red: [
+        { name: 'Так в презентации', kws: ['в презентац', 'так напис', 'у нас написан'] },
+        { name: 'Признание что это маркетинг', kws: ['это маркетинг', '5-8% реальн', 'для маркет'] },
+        { name: 'Уход от вопроса', kws: ['сложно сказать', 'у всех по-разн', 'нельзя точн'] }
+      ]
+    },
+    ideal: 'Цифра подтверждена статистикой по 200+ заведениям. Механика: гость через QR-меню берёт на 1-2 позиции больше — спокойно изучает, видит фото, не стесняется заказать допы. На чеке 3 000 это +480 тг с гостя. На пилоте 2-4 недели подтверждаем по вашим данным.'
+  },
+  {
+    q: '«Допустим, у меня будет не +16%, а +8% — что с окупаемостью? Покажите математически.»',
+    context: 'Проверка: умеете ли работать с пессимистичным сценарием.',
+    rubric: {
+      must: [
+        { name: 'Пересчёт окупаемости в реалистичном сценарии', kws: [
+          'удваив', 'удвоится', '× 2', 'x2', '3 месяц', '3-4 месяц', 'дольше но', 'медленн но',
+          '1.5 → 3', '1.5 до 3', 'наполовин', 'вдвое',
+          'линейн', 'пропорцион', 'зависит от', 'половин',
+          'пилот', 'факт', 'пересчит', 'корректир', 'обсуд'
+        ]}
+      ],
+      plus: [
+        { name: 'Удвоение окупаемости (1.5 → 3 мес)', kws: ['удваив', 'удвоится', '× 2', '3 месяц', '3-4 месяц', '1.5 → 3'] },
+        { name: 'Сравнение с альтернативами', kws: ['в разы быстр', 'быстрее любых', 'альтернатив', 'другие it', 'сравн с'] },
+        { name: 'Пересчёт по факту на пилоте', kws: ['пилот', '2 недел', '4 недел', 'факт', 'пересчит', 'по факту'] },
+        { name: 'Гибкость условий', kws: ['корректир', 'пересмотр', 'обсуд', 'гибк', 'индивид условия'] }
+      ],
+      red: [
+        { name: 'Этого не может быть', kws: ['не может быть', 'гарантирован', 'у всех 16'] },
+        { name: 'Возьмите больше продуктов', kws: ['больше продукт', 'докуп', 'добав другой продукт', 'компенсир продуктами'] },
+        { name: 'Тогда не подходит', kws: ['не подход', 'не для вас', 'продукт не для'] }
+      ]
+    },
+    ideal: 'Окупаемость линейно зависит от прироста: +8% вместо +16% — окупаемость удваивается, с 1.5-2 до 3-4 месяцев. Это всё равно быстрее любых других IT-инвестиций. На пилоте 2-4 недели пересчитываем расчёт по фактическим данным и обсуждаем условия.'
+  },
+  {
+    q: '«А если ваши продукты не сработают на моём заведении — кто компенсирует риск?»',
+    context: 'Финальный тест. Аскар проверяет: разделите ли вы с ним риск.',
+    rubric: {
+      must: [
+        { name: 'Пилот с измеримыми KPI и условиями пересмотра', kws: [
+          'пилот', '2 недел', '4 недел', 'kpi', 'фиксиров', 'измерим', 'договорн',
+          'пересмотр', 'возврат', 'возврат оплат', 'пересматр', 'корректир конфигур',
+          'пилотн соглашен', 'условиям', 'sla',
+          'прозрачн', 'дашборд', 'еженедельн', 'видите всё', 'метрик еженед', 'отчёт',
+          'механизм', 'разделён риск', 'разделение риск'
+        ]}
+      ],
+      plus: [
+        { name: 'Фиксированные KPI', kws: ['kpi', 'фиксиров', 'измерим', 'договорн kpi'] },
+        { name: 'Прозрачность метрик', kws: ['прозрачн', 'дашборд', 'общий доступ', 'еженедельн', 'видите всё', 'отчёт'] },
+        { name: 'Несколько сценариев на отклонение', kws: ['сценари', 'три вариант', 'три сценар', 'настройк меню', 'обучен'] },
+        { name: 'Возврат по соглашению', kws: ['возврат', 'возврат оплат', 'по условиям', 'пилотн соглашен'] }
+      ],
+      red: [
+        { name: 'Гарантий нет', kws: ['гарантий нет', 'это бизнес', 'без гарант'] },
+        { name: 'Вернём 100% (ложное обещание)', kws: ['вернём 100', '100% возврат', 'верну все', 'верну деньг гарант', 'без вопрос верн'] },
+        { name: 'У всех работает', kws: ['у всех работа', 'у всех получ', 'у вас тоже сработ'] }
+      ]
+    },
+    ideal: 'Риск разделён через пилот 2-4 недели с фиксированными KPI и еженедельными метриками в общем дашборде. Если KPI не достигаются — корректируем настройку, меняем конфигурацию или возвращаем оплату по условиям пилотного соглашения. Не «100% гарантия», а прозрачный механизм управления риском.'
+  }
+];
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 8. HELPERS — shuffle (Basic) & evaluate open answer        │
+   └──────────────────────────────────────────────────────────┘ */
+
+// перетасовка вариантов ответа, чтобы правильный не был всегда на одной позиции
+function shuffleOptions(q) {
+  const pairs = q.options.map((text, idx) => ({ text, isCorrect: idx === q.correct }));
+  // Fisher-Yates
+  for (let i = pairs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+  }
+  return {
+    ...q,
+    options: pairs.map(p => p.text),
+    correct: pairs.findIndex(p => p.isCorrect)
+  };
+}
+
+// проверка свободного ответа по рубрике с ключевыми словами
+// Логика: must — это ядро ответа (1-2 концепта), plus — бонусы (любые из них дают балл)
+// Короткий правильный ответ, покрывающий все must — считается сильным.
+function evalAnswer(text, rubric) {
+  const t = (text || '').toLowerCase();
+  const hit = c => c.kws.some(k => t.includes(k.toLowerCase()));
+
+  const mustHit = rubric.must.filter(hit);
+  const mustMiss = rubric.must.filter(c => !hit(c));
+  const plusHit = (rubric.plus || []).filter(hit);
+  const plusMiss = (rubric.plus || []).filter(c => !hit(c));
+  const redHit = (rubric.red || []).filter(hit);
+
+  const mustScore = rubric.must.length ? mustHit.length / rubric.must.length : 1;
+  const plusScore = (rubric.plus || []).length ? plusHit.length / rubric.plus.length : 0;
+  const redPenalty = redHit.length * 0.20;
+
+  // Формула: must — 55%, plus — 45%, минус штрафы за антипаттерны.
+  // Это даёт короткому ответу с покрытыми must шанс получить >= 55 баллов сразу.
+  let raw = mustScore * 0.55 + plusScore * 0.45 - redPenalty;
+  raw = Math.max(0, Math.min(1, raw));
+  const score = Math.round(raw * 100);
+
+  // Verdict — мягкий: все must покрыты И нет red И score >= 55 → strong.
+  // Это позволяет короткому ответу «+400 × 100 = 40К/день» получить strong,
+  // не требуя упоминать все возможные аргументы.
+  let verdict;
+  if (mustHit.length === rubric.must.length && redHit.length === 0 && score >= 55) verdict = 'strong';
+  else if (score >= 35 && redHit.length <= 1) verdict = 'partial';
+  else verdict = 'weak';
+
+  return { score, verdict, mustHit, mustMiss, plusHit, plusMiss, redHit };
+}
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 9. NAVIGATION                                             │
+   └──────────────────────────────────────────────────────────┘ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // обновляем прогресс-навигацию
+  const stepMap = { 'screen-m1':1, 'screen-m2':2, 'screen-m3':3, 'screen-m4':4, 'screen-final':5 };
+  const cur = stepMap[id];
+  document.querySelectorAll('.progress-nav .step').forEach(s => {
+    const n = +s.getAttribute('data-step');
+    s.classList.toggle('is-active', n === cur);
+    s.classList.toggle('is-done', cur && n < cur);
+  });
+}
+
+// Перепрыгнуть на любой модуль или финал. Работает в любой момент.
+function jumpTo(stepNum) {
+  // если имя не введено — подставляем "Тестер" для возможности тестирования
+  if (!app.managerName) {
+    app.managerName = 'Тестер';
+    app.startedAt = app.startedAt || new Date().toISOString();
+  }
+  app.usedJumpNav = true; // отмечаем что навигация была использована
+  stopTimer();
+  if (stepNum === 1) startModule1();
+  else if (stepNum === 2) startModule2();
+  else if (stepNum === 3) startModule3();
+  else if (stepNum === 4) startModule4();
+  else if (stepNum === 5) finishAll();
+}
+
+// Вернуться на стартовый экран
+function goHome() {
+  stopTimer();
+  showScreen('screen-start');
+}
+
+// Привязываем клики по topbar — шаги и логотип
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.progress-nav .step').forEach(step => {
+    step.addEventListener('click', () => {
+      const n = +step.getAttribute('data-step');
+      jumpTo(n);
+    });
+  });
+  const brand = document.getElementById('brandHome');
+  if (brand) brand.addEventListener('click', goHome);
+
+  // === OpenAI: прокси-сервер (рекомендуется) или прямой ключ (только разработка) ===
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const apiKeySave = document.getElementById('apiKeySave');
+  const apiKeyClear = document.getElementById('apiKeyClear');
+  const proxyUrlInput = document.getElementById('proxyUrlInput');
+  const proxyUrlSave = document.getElementById('proxyUrlSave');
+  const proxyUrlClear = document.getElementById('proxyUrlClear');
+  const aiStatus = document.getElementById('aiStatus');
+  const aiTestResult = document.getElementById('aiTestResult');
+
+  // Переключение табов "Прокси" / "Свой ключ"
+  document.querySelectorAll('.ai-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.ai-tab').forEach(t => t.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      const target = tab.getAttribute('data-tab');
+      document.querySelectorAll('.ai-tab-body').forEach(b => {
+        b.style.display = b.getAttribute('data-tab-body') === target ? 'block' : 'none';
+      });
+    });
+  });
+
+  function refreshAiStatus() {
+    const proxy = getProxyUrl();
+    const key = getApiKey();
+    if (proxy) {
+      aiStatus.innerHTML = '🤖 ИИ-собеседник: <strong>Cloudflare прокси</strong>';
+      aiStatus.classList.add('is-connected');
+      proxyUrlInput.value = proxy;
+      proxyUrlClear.style.display = 'inline-block';
+      apiKeyInput.value = key ? '••••••••' + key.slice(-4) : '';
+      apiKeyClear.style.display = key ? 'inline-block' : 'none';
+    } else if (key) {
+      aiStatus.innerHTML = '🤖 ИИ-собеседник: <strong>OpenAI напрямую (⚠ только разработка)</strong>';
+      aiStatus.classList.add('is-connected');
+      apiKeyInput.value = '••••••••' + key.slice(-4);
+      apiKeyClear.style.display = 'inline-block';
+      proxyUrlInput.value = '';
+      proxyUrlClear.style.display = 'none';
+    } else {
+      aiStatus.innerHTML = '🤖 ИИ-собеседник: <strong>локальная логика</strong>';
+      aiStatus.classList.remove('is-connected');
+      apiKeyInput.value = '';
+      apiKeyClear.style.display = 'none';
+      proxyUrlInput.value = '';
+      proxyUrlClear.style.display = 'none';
+    }
+  }
+
+  // — Прокси-URL —
+  if (proxyUrlSave) {
+    proxyUrlSave.addEventListener('click', async () => {
+      const url = proxyUrlInput.value.trim();
+      if (!/^https?:\/\//.test(url)) {
+        aiTestResult.textContent = 'URL должен начинаться с https:// (или http:// для локальной разработки).';
+        aiTestResult.className = 'ai-test-result is-error';
+        return;
+      }
+      aiTestResult.textContent = 'Проверяю прокси...';
+      aiTestResult.className = 'ai-test-result';
+      setProxyUrl(url);
+      const testReply = await callAskarGPT('Проверка связи. Скажи коротко: "готов".', []);
+      if (testReply) {
+        aiTestResult.textContent = '✓ Прокси работает. Аскар будет отвечать через GPT-4o-mini.';
+        aiTestResult.className = 'ai-test-result is-success';
+        refreshAiStatus();
+      } else {
+        clearProxyUrl();
+        aiTestResult.textContent = '✗ Прокси не отвечает. Проверьте URL и что в Cloudflare Worker задан OPENAI_API_KEY как secret.';
+        aiTestResult.className = 'ai-test-result is-error';
+      }
+    });
+  }
+  if (proxyUrlClear) {
+    proxyUrlClear.addEventListener('click', () => {
+      clearProxyUrl();
+      aiTestResult.textContent = 'Прокси отключён.';
+      aiTestResult.className = 'ai-test-result';
+      refreshAiStatus();
+    });
+  }
+
+  // — Прямой ключ (для разработки) —
+  if (apiKeySave) {
+    apiKeySave.addEventListener('click', async () => {
+      let key = apiKeyInput.value.trim();
+      if (key.startsWith('•')) return;
+      if (!key.startsWith('sk-')) {
+        aiTestResult.textContent = 'Ключ должен начинаться с "sk-". Проверьте.';
+        aiTestResult.className = 'ai-test-result is-error';
+        return;
+      }
+      aiTestResult.textContent = 'Проверяю ключ...';
+      aiTestResult.className = 'ai-test-result';
+      setApiKey(key);
+      const testReply = await callAskarGPT('Проверка связи. Скажи коротко: "готов".', []);
+      if (testReply) {
+        aiTestResult.textContent = '✓ Ключ работает. ⚠ Не используйте этот режим на публичной странице — ключ виден через DevTools.';
+        aiTestResult.className = 'ai-test-result is-success';
+        refreshAiStatus();
+      } else {
+        clearApiKey();
+        aiTestResult.textContent = '✗ Ключ не работает. Проверьте правильность и баланс на OpenAI.';
+        aiTestResult.className = 'ai-test-result is-error';
+      }
+    });
+  }
+  if (apiKeyClear) {
+    apiKeyClear.addEventListener('click', () => {
+      clearApiKey();
+      aiTestResult.textContent = 'Ключ отключён.';
+      aiTestResult.className = 'ai-test-result';
+      refreshAiStatus();
+    });
+  }
+  refreshAiStatus();
+});
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 9. START SCREEN                                           │
+   └──────────────────────────────────────────────────────────┘ */
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    app.mode = btn.getAttribute('data-mode');
+    document.body.setAttribute('data-mode', app.mode);
+    document.getElementById('modeBadge').textContent = app.mode === 'senior' ? 'Senior' : 'Базовый';
+    // обновляем теги в модулях
+    ['m1','m2','m3','m4'].forEach(m => {
+      const el = document.getElementById(m + 'ModeTag');
+      if (el) {
+        el.textContent = app.mode === 'senior' ? 'Senior' : 'Базовый';
+        el.classList.toggle('senior', app.mode === 'senior');
+      }
+    });
+  });
+});
+
+const nameInput = document.getElementById('managerName');
+const startBtn = document.getElementById('startBtn');
+nameInput.addEventListener('input', () => {
+  startBtn.disabled = nameInput.value.trim().length < 3;
+});
+startBtn.addEventListener('click', () => {
+  app.managerName = nameInput.value.trim();
+  app.startedAt = new Date().toISOString();
+  startModule1();
+});
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 10. TIMER (Senior)                                        │
+   └──────────────────────────────────────────────────────────┘ */
+function startTimer(seconds, onTimeout) {
+  if (app.mode !== 'senior') return;
+  stopTimer();
+  const bar = document.getElementById('timerBar');
+  const fill = document.getElementById('timerFill');
+  const num = document.getElementById('timerNum');
+  bar.classList.add('is-active');
+  let left = seconds;
+  fill.style.width = '100%';
+  num.textContent = left;
+  app.timer = setInterval(() => {
+    left--;
+    num.textContent = left;
+    fill.style.width = (left / seconds * 100) + '%';
+    bar.classList.toggle('is-warn', left <= 7);
+    bar.classList.toggle('is-danger', left <= 3);
+    if (left <= 0) {
+      stopTimer();
+      onTimeout && onTimeout();
+    }
+  }, 1000);
+}
+function stopTimer() {
+  if (app.timer) clearInterval(app.timer);
+  app.timer = null;
+  const bar = document.getElementById('timerBar');
+  if (bar) bar.classList.remove('is-active', 'is-warn', 'is-danger');
+}
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 11. MODULE 1 — Products quiz                              │
+   └──────────────────────────────────────────────────────────┘ */
+function getQuestions(mod) {
+  if (mod === 1) return app.mode === 'senior' ? M1_SENIOR : M1_BASIC;
+  if (mod === 2) return M2_SEGMENTS; // единый набор для обоих режимов
+  return [];
+}
+
+// оценка multi-select выбора по сегменту (F1 score)
+function evalMultiSelect(pickedArr, segment) {
+  const correctSet = new Set(segment.correct);
+  const pickedSet = new Set(pickedArr);
+  const tp = pickedArr.filter(p => correctSet.has(p)).length;
+  const fp = pickedArr.filter(p => !correctSet.has(p)).length;
+  const fn = segment.correct.filter(c => !pickedSet.has(c)).length;
+  const precision = (tp + fp) > 0 ? tp / (tp + fp) : 0;
+  const recall = segment.correct.length > 0 ? tp / segment.correct.length : 1;
+  const f1 = (precision + recall) > 0 ? 2 * precision * recall / (precision + recall) : 0;
+  let score = Math.round(f1 * 100);
+  // штраф за антипаттерн "выбрал слишком много": если лишних >= 2, режем оценку
+  if (fp >= 2) score = Math.min(score, 45);
+  // если ничего правильно не выбрал — 0
+  if (tp === 0) score = 0;
+
+  let verdict;
+  if (tp === segment.correct.length && fp === 0) verdict = 'strong';
+  else if (f1 >= 0.65 && fp <= 1) verdict = 'partial';
+  else verdict = 'weak';
+
+  return {
+    score, verdict, tp, fp, fn, precision, recall, f1,
+    correctPicked: pickedArr.filter(p => correctSet.has(p)),
+    wrongPicked: pickedArr.filter(p => !correctSet.has(p)),
+    missed: segment.correct.filter(c => !pickedSet.has(c))
+  };
+}
+
+function startModule1() {
+  app.m1 = { idx: 0, correct: 0, timeouts: 0, history: [], scoreSum: 0, scoreN: 0 };
+  showScreen('screen-m1');
+  const qs = getQuestions(1);
+  document.getElementById('m1Tot').textContent = qs.length;
+  renderM1();
+}
+
+function renderM1() {
+  const qs = getQuestions(1);
+  if (app.m1.idx >= qs.length) {
+    stopTimer();
+    return startModule2();
+  }
+  const rawQ = qs[app.m1.idx];
+  document.getElementById('m1Cur').textContent = app.m1.idx + 1;
+  document.getElementById('m1Progress').style.width = ((app.m1.idx + 1) / qs.length * 100) + '%';
+
+  // Senior mode → open-text question
+  if (app.mode === 'senior') {
+    renderOpenQuestion(1, rawQ, () => {
+      app.m1.idx++;
+      renderM1();
+    });
+    return;
+  }
+
+  // Basic mode → multiple choice with SHUFFLED options
+  const q = shuffleOptions(rawQ);
+  document.getElementById('m1Q').textContent = q.q;
+  const opts = document.getElementById('m1Opts');
+  opts.innerHTML = '';
+  const fb = document.getElementById('m1Fb');
+  fb.classList.remove('is-show', 'is-right', 'is-wrong');
+  // показать обычную карточку
+  document.querySelector('#screen-m1 .quiz-card').style.display = 'block';
+  document.getElementById('m1OpenSlot') && (document.getElementById('m1OpenSlot').innerHTML = '');
+
+  q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'quiz-opt';
+    b.textContent = opt;
+    b.onclick = () => onM1Answer(i, q);
+    opts.appendChild(b);
+  });
+}
+
+// универсальный рендер вопроса со свободным ответом
+function renderOpenQuestion(moduleNum, q, onNext) {
+  const cardId = moduleNum === 1 ? 'screen-m1' : moduleNum === 2 ? 'screen-m2' : null;
+  const card = cardId ? document.querySelector('#' + cardId + ' .quiz-card') : null;
+  if (!card) return;
+
+  // показываем вопрос; question element берём текущий или создаём
+  card.innerHTML = `
+    <div class="open-q">${q.q}</div>
+    ${q.context ? `<div class="open-q-context">${q.context}</div>` : ''}
+    <textarea class="open-textarea" id="openTa" rows="5"
+      placeholder="Ваш ответ свободным текстом. Минимум 40 символов."></textarea>
+    <div class="open-bar">
+      <span class="open-counter" id="openCnt">0 / 40</span>
+      <button class="btn-primary" id="openSend">Отправить ответ →</button>
+    </div>
+    <div id="openEval"></div>
+  `;
+
+  const ta = document.getElementById('openTa');
+  const cnt = document.getElementById('openCnt');
+  const sendBtn = document.getElementById('openSend');
+
+  ta.addEventListener('input', () => {
+    const len = ta.value.trim().length;
+    cnt.textContent = len + ' / 40';
+    cnt.classList.toggle('is-ok', len >= 40);
+  });
+  ta.focus();
+
+  // submit handler
+  function submit(timeout) {
+    const text = ta.value.trim();
+    if (!timeout && text.length < 40) {
+      ta.classList.add('is-error');
+      setTimeout(() => ta.classList.remove('is-error'), 600);
+      return;
+    }
+    stopTimer();
+    ta.disabled = true;
+    sendBtn.disabled = true;
+
+    const evalRes = timeout && text.length < 10
+      ? { score: 0, verdict: 'weak', mustHit: [], mustMiss: q.rubric.must, plusHit: [], plusMiss: q.rubric.plus || [], redHit: [] }
+      : evalAnswer(text, q.rubric);
+
+    // сохраняем результат
+    const store = moduleNum === 1 ? app.m1 : app.m2;
+    store.history.push({
+      q: q.q,
+      answer: text,
+      score: evalRes.score,
+      verdict: evalRes.verdict,
+      timeout: !!timeout,
+      mustHit: evalRes.mustHit.map(c => c.name),
+      mustMiss: evalRes.mustMiss.map(c => c.name),
+      plusHit: evalRes.plusHit.map(c => c.name),
+      plusMiss: evalRes.plusMiss.map(c => c.name),
+      redHit: evalRes.redHit.map(c => c.name)
+    });
+    store.scoreSum = (store.scoreSum || 0) + evalRes.score;
+    store.scoreN = (store.scoreN || 0) + 1;
+    if (evalRes.verdict === 'strong') store.correct++;
+    if (timeout) store.timeouts++;
+
+    // отрисовка результата
+    const verdictLabel = {
+      strong: '✓ Сильный ответ',
+      partial: '~ Частично',
+      weak: '✗ Слабый ответ'
+    }[evalRes.verdict];
+
+    const html = `
+      <div class="eval-result">
+        <div class="eval-header">
+          <span class="eval-verdict ${evalRes.verdict}">${verdictLabel}</span>
+          <span class="eval-score ${evalRes.verdict}">${evalRes.score} / 100</span>
+        </div>
+
+        ${timeout ? '<div style="font-size:13px; color:var(--danger); margin-bottom:14px;">⏱ Время вышло — оценка по тому что успели написать.</div>' : ''}
+
+        ${evalRes.mustHit.length ? `
+          <div class="eval-group">
+            <div class="eval-group-title">Закрыто (обязательные концепты)</div>
+            <div class="concept-chips">
+              ${evalRes.mustHit.map(c => `<span class="concept hit">✓ ${c.name}</span>`).join('')}
+            </div>
+          </div>` : ''}
+
+        ${evalRes.mustMiss.length ? `
+          <div class="eval-group">
+            <div class="eval-group-title">Пропущено (важно)</div>
+            <div class="concept-chips">
+              ${evalRes.mustMiss.map(c => `<span class="concept miss">✗ ${c.name}</span>`).join('')}
+            </div>
+          </div>` : ''}
+
+        ${evalRes.plusHit.length ? `
+          <div class="eval-group">
+            <div class="eval-group-title">Бонусы за упоминание</div>
+            <div class="concept-chips">
+              ${evalRes.plusHit.map(c => `<span class="concept hit">+ ${c.name}</span>`).join('')}
+            </div>
+          </div>` : ''}
+
+        ${evalRes.redHit.length ? `
+          <div class="eval-group">
+            <div class="eval-group-title">Антипаттерны (минус)</div>
+            <div class="concept-chips">
+              ${evalRes.redHit.map(c => `<span class="concept red">− ${c.name}</span>`).join('')}
+            </div>
+          </div>` : ''}
+
+        <div class="ideal-block">
+          <div class="ideal-title">Эталонный ответ</div>
+          <div class="ideal-text">${q.ideal}</div>
+        </div>
+
+        <div class="open-next">
+          <button class="btn-primary" id="openNext">Следующий вопрос →</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('openEval').innerHTML = html;
+    document.getElementById('openNext').onclick = onNext;
+    document.getElementById('openNext').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  sendBtn.onclick = () => submit(false);
+  ta.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') submit(false);
+  });
+
+  // таймер 60 секунд на открытый ответ
+  startTimer(60, () => submit(true));
+}
+
+function onM1Answer(i, q) {
+  stopTimer();
+  const opts = document.getElementById('m1Opts');
+  Array.from(opts.children).forEach(b => b.disabled = true);
+  const correct = i === q.correct;
+  opts.children[i].classList.add(correct ? 'is-correct' : 'is-wrong');
+  if (!correct) opts.children[q.correct].classList.add('is-correct');
+
+  if (correct) app.m1.correct++;
+  app.m1.history.push({ q: q.q, picked: i, correct: q.correct, isRight: correct });
+
+  if (q.explain) {
+    const fb = document.getElementById('m1Fb');
+    fb.textContent = (correct ? '✓ ' : '✗ ') + q.explain;
+    fb.classList.add('is-show', correct ? 'is-right' : 'is-wrong');
+  }
+
+  setTimeout(() => {
+    app.m1.idx++;
+    renderM1();
+  }, q.explain ? 1500 : 900);
+}
+
+function onM1Timeout(q) {
+  // legacy для basic-mode taймера (сейчас не используется, basic без таймера)
+  const opts = document.getElementById('m1Opts');
+  Array.from(opts.children).forEach(b => b.disabled = true);
+  opts.children[q.correct].classList.add('is-correct');
+  app.m1.timeouts++;
+  app.m1.history.push({ q: q.q, picked: -1, correct: q.correct, isRight: false, timeout: true });
+  const fb = document.getElementById('m1Fb');
+  fb.textContent = '⏱ Время вышло. Засчитано как ошибка.';
+  fb.classList.add('is-show', 'is-wrong');
+  setTimeout(() => { app.m1.idx++; renderM1(); }, 1500);
+}
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 12. MODULE 2 — Segments quiz                              │
+   └──────────────────────────────────────────────────────────┘ */
+function startModule2() {
+  app.m2 = { idx: 0, correct: 0, timeouts: 0, history: [], scoreSum: 0, scoreN: 0 };
+  showScreen('screen-m2');
+  const qs = getQuestions(2);
+  document.getElementById('m2Tot').textContent = qs.length;
+  renderM2();
+}
+
+function renderM2() {
+  const qs = getQuestions(2);
+  if (app.m2.idx >= qs.length) {
+    stopTimer();
+    return startModule3();
+  }
+  const seg = qs[app.m2.idx];
+  document.getElementById('m2Cur').textContent = app.m2.idx + 1;
+  document.getElementById('m2Progress').style.width = ((app.m2.idx + 1) / qs.length * 100) + '%';
+
+  const card = document.querySelector('#screen-m2 .quiz-card');
+  const picked = new Set();
+
+  card.innerHTML = `
+    <div class="segment-name">${seg.name}</div>
+    <div class="segment-desc">${seg.description}</div>
+    <div class="segment-prompt">Выберите все продукты SR, которые вы бы предложили этому заведению:</div>
+    <div class="segment-grid" id="segGrid"></div>
+    <div class="segment-bar">
+      <span class="segment-counter" id="segCnt">выбрано: 0</span>
+      <button class="btn-primary" id="segSend">Готово →</button>
+    </div>
+    <div id="segEval"></div>
+  `;
+
+  const grid = document.getElementById('segGrid');
+  PRODUCTS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'segment-pick';
+    el.setAttribute('data-pid', p.id);
+    el.innerHTML = `
+      <div class="segment-check">✓</div>
+      <div class="segment-pname">${p.name}</div>
+    `;
+    el.onclick = () => {
+      if (picked.has(p.id)) picked.delete(p.id);
+      else picked.add(p.id);
+      el.classList.toggle('is-on');
+      document.getElementById('segCnt').textContent = 'выбрано: ' + picked.size;
+    };
+    grid.appendChild(el);
+  });
+
+  function submit(timeout) {
+    if (!timeout && picked.size === 0) {
+      // подсветим что нужно что-то выбрать
+      const cnt = document.getElementById('segCnt');
+      cnt.style.color = 'var(--danger)';
+      cnt.textContent = 'выберите хотя бы один продукт';
+      setTimeout(() => {
+        cnt.style.color = '';
+        cnt.textContent = 'выбрано: 0';
+      }, 1500);
+      return;
+    }
+    stopTimer();
+    document.getElementById('segSend').disabled = true;
+    document.querySelectorAll('.segment-pick').forEach(el => el.style.pointerEvents = 'none');
+
+    const evalRes = evalMultiSelect([...picked], seg);
+    if (evalRes.verdict === 'strong') app.m2.correct++;
+    app.m2.scoreSum = (app.m2.scoreSum || 0) + evalRes.score;
+    app.m2.scoreN = (app.m2.scoreN || 0) + 1;
+    if (timeout) app.m2.timeouts++;
+    app.m2.history.push({
+      segment: seg.name,
+      picked: [...picked],
+      correct: seg.correct,
+      score: evalRes.score,
+      verdict: evalRes.verdict,
+      timeout: !!timeout
+    });
+
+    // подсветить выбранные
+    document.querySelectorAll('.segment-pick').forEach(el => {
+      const pid = el.getAttribute('data-pid');
+      const isCorrect = seg.correct.includes(pid);
+      const wasPicked = picked.has(pid);
+      if (wasPicked && isCorrect) el.classList.add('is-right');
+      else if (wasPicked && !isCorrect) el.classList.add('is-wrong');
+      else if (!wasPicked && isCorrect) el.classList.add('is-missed');
+    });
+
+    const verdictLabel = {
+      strong: '✓ Точная сегментация',
+      partial: '~ Близко, но не точно',
+      weak: '✗ Слабая сегментация'
+    }[evalRes.verdict];
+
+    // строим разбор: правильные хиты + пропущенные + лишние
+    const allProds = PRODUCTS.map(p => p.id);
+    const correctPickedHtml = evalRes.correctPicked.map(pid => {
+      const p = PRODUCTS.find(x => x.id === pid);
+      return `<div class="breakdown-row right">
+        <div class="breakdown-icon">✓</div>
+        <div><div class="breakdown-name">${p.name}</div><div class="breakdown-text">${seg.explanations[pid] || ''}</div></div>
+      </div>`;
+    }).join('');
+
+    const missedHtml = evalRes.missed.map(pid => {
+      const p = PRODUCTS.find(x => x.id === pid);
+      return `<div class="breakdown-row missed">
+        <div class="breakdown-icon">!</div>
+        <div><div class="breakdown-name">Упустили: ${p.name}</div><div class="breakdown-text">${seg.explanations[pid] || ''}</div></div>
+      </div>`;
+    }).join('');
+
+    const wrongHtml = evalRes.wrongPicked.map(pid => {
+      const p = PRODUCTS.find(x => x.id === pid);
+      return `<div class="breakdown-row wrong">
+        <div class="breakdown-icon">✗</div>
+        <div><div class="breakdown-name">Зря выбрали: ${p.name}</div><div class="breakdown-text">${seg.explanations[pid] || ''}</div></div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('segEval').innerHTML = `
+      <div class="eval-result">
+        <div class="eval-header">
+          <span class="eval-verdict ${evalRes.verdict}">${verdictLabel}</span>
+          <span class="eval-score ${evalRes.verdict}">${evalRes.score} / 100</span>
+        </div>
+        ${timeout ? '<div style="font-size:13px; color:var(--danger); margin-bottom:14px;">⏱ Время вышло — клиент принял решение без вас.</div>' : ''}
+        ${correctPickedHtml ? `<div class="breakdown-section">${correctPickedHtml}</div>` : ''}
+        ${missedHtml ? `<div class="breakdown-section">${missedHtml}</div>` : ''}
+        ${wrongHtml ? `<div class="breakdown-section">${wrongHtml}</div>` : ''}
+        <div class="open-next">
+          <button class="btn-primary" id="segNext">Следующий сегмент →</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('segNext').onclick = () => {
+      app.m2.idx++;
+      renderM2();
+    };
+    document.getElementById('segNext').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.getElementById('segSend').onclick = () => submit(false);
+
+  // Таймер только в senior-режиме (75 секунд на сегмент)
+  if (app.mode === 'senior') {
+    startTimer(75, () => submit(true));
+  }
+}
+
+// onM2Answer/onM2Timeout удалены — multi-select обрабатывается внутри renderM2
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 13. MODULE 3 — Role play                                  │
+   └──────────────────────────────────────────────────────────┘ */
+function startModule3() {
+  app.m3 = {
+    turn: 0, loyalty: 50, log: [],
+    spin: { S: 0, P: 0, I: 0, N: 0 },
+    objectionsHandled: 0, objectionsTotal: 0,
+    pitchedTooEarly: false,
+    correctChoices: 0, totalChoices: 0,
+    revealed: new Set(),
+    gptHistory: []
+  };
+  showScreen('screen-m3');
+  document.getElementById('chatLog').innerHTML = '';
+  updateLoyalty();
+
+  document.getElementById('m3TotTurns').textContent = 10;
+
+  // Бейдж индикатора AI
+  const titleEl = document.querySelector('#screen-m3 .quiz-title');
+  if (titleEl) {
+    let badge = document.getElementById('aiBadgeM3');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.id = 'aiBadgeM3';
+      badge.className = 'ai-badge';
+      titleEl.appendChild(badge);
+    }
+    if (getProxyUrl()) {
+      badge.className = 'ai-badge is-on';
+      badge.textContent = 'GPT через прокси';
+    } else if (getApiKey()) {
+      badge.className = 'ai-badge is-on';
+      badge.textContent = 'GPT-4o-mini';
+    } else {
+      badge.className = 'ai-badge is-off';
+      badge.textContent = 'локальная логика';
+    }
+  }
+
+  addAskarMsg(SENIOR_OPENING);
+  renderSeniorInput();
+}
+
+function addAskarMsg(html) {
+  const log = document.getElementById('chatLog');
+  const div = document.createElement('div');
+  div.className = 'msg askar';
+  div.innerHTML = html;
+  log.appendChild(div);
+  log.scrollIntoView({ block: 'end', behavior: 'smooth' });
+}
+function addManagerMsg(text) {
+  const log = document.getElementById('chatLog');
+  const div = document.createElement('div');
+  div.className = 'msg manager';
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollIntoView({ block: 'end', behavior: 'smooth' });
+}
+
+function updateLoyalty() {
+  app.m3.loyalty = Math.max(0, Math.min(100, app.m3.loyalty));
+  document.getElementById('loyaltyPct').textContent = app.m3.loyalty + '%';
+  document.getElementById('loyaltyFill').style.width = app.m3.loyalty + '%';
+  const s = document.getElementById('loyaltyStatus');
+  if (app.m3.loyalty >= 75) { s.textContent = '🟢 Заинтересован'; s.style.color = 'var(--good)'; }
+  else if (app.m3.loyalty >= 50) { s.textContent = '🟡 Нейтрален'; s.style.color = 'var(--warn)'; }
+  else if (app.m3.loyalty >= 25) { s.textContent = '🟠 Раздражён'; s.style.color = 'var(--accent-2)'; }
+  else { s.textContent = '🔴 Готов уйти'; s.style.color = 'var(--danger)'; }
+}
+
+/* ── Свободный ввод реплик с SPIN-распознаванием (оба режима) ── */
+function renderSeniorInput() {
+  const area = document.getElementById('answerArea');
+  area.innerHTML = '';
+
+  const hint = document.createElement('div');
+  hint.className = 'senior-spin-hint';
+  hint.innerHTML = '<strong>SPIN-методология:</strong> Ситуационные (факты о бизнесе) → Проблемные (боли клиента) → Извлекающие (масштаб потерь) → Направляющие (ценность решения). Доведите Аскара до состояния «готов слушать предложение». Каждый правильный вопрос раскрывает новую боль.';
+  area.appendChild(hint);
+
+  const ta = document.createElement('textarea');
+  ta.className = 'senior-textarea';
+  ta.id = 'seniorInput';
+  ta.rows = 3;
+  ta.placeholder = 'Ваша реплика клиенту... (например: «Сколько чеков в день? Что у вас занимает больше всего времени у кассы?»)';
+  area.appendChild(ta);
+
+  const meter = document.createElement('div');
+  meter.className = 'spin-meter';
+  meter.innerHTML = `
+    <span class="spin-chip" data-spin="S">S · ${app.m3.spin.S}</span>
+    <span class="spin-chip" data-spin="P">P · ${app.m3.spin.P}</span>
+    <span class="spin-chip" data-spin="I">I · ${app.m3.spin.I}</span>
+    <span class="spin-chip" data-spin="N">N · ${app.m3.spin.N}</span>
+  `;
+  area.appendChild(meter);
+  updateSpinMeter();
+
+  const btn = document.createElement('button');
+  btn.className = 'btn-primary';
+  btn.textContent = 'Отправить реплику →';
+  btn.onclick = onSeniorSubmit;
+  area.appendChild(btn);
+
+  const endBtn = document.createElement('button');
+  endBtn.className = 'btn-secondary';
+  endBtn.style.marginLeft = '8px';
+  endBtn.textContent = 'Завершить разговор';
+  endBtn.onclick = () => {
+    if (!confirm('Завершить разговор с Аскаром?')) return;
+    const closingMsg = app.m3.loyalty >= 75
+      ? '*кивает* Хорошо, я понял суть. Пришлите расчёт по моему заведению на почту. Спасибо за время.'
+      : app.m3.loyalty >= 50
+      ? 'Понятно. Мне нужно подумать. Свяжитесь со мной на следующей неделе.'
+      : 'Мне это пока не очень интересно. Если будут конкретные кейсы — пришлите. Спасибо.';
+    addAskarMsg(closingMsg);
+    setTimeout(finishRoleplay, 1500);
+  };
+  area.appendChild(endBtn);
+}
+
+function updateSpinMeter() {
+  document.querySelectorAll('.spin-chip').forEach(c => {
+    const k = c.getAttribute('data-spin');
+    c.textContent = `${k} · ${app.m3.spin[k]}`;
+    c.classList.toggle('is-used', app.m3.spin[k] > 0);
+  });
+}
+
+async function onSeniorSubmit() {
+  const ta = document.getElementById('seniorInput');
+  const text = ta.value.trim();
+  if (text.length < 5) {
+    ta.classList.add('is-error');
+    setTimeout(() => ta.classList.remove('is-error'), 800);
+    return;
+  }
+  app.m3.totalChoices++;
+  addManagerMsg(text);
+
+  ta.disabled = true;
+  const sendBtn = document.querySelector('#answerArea .btn-primary');
+  if (sendBtn) sendBtn.disabled = true;
+
+  // Анализируем SPIN для отслеживания метрик (независимо от того, кто отвечает)
+  const spin = analyzeSPIN(text);
+  if (spin.S) app.m3.spin.S++;
+  if (spin.P) app.m3.spin.P++;
+  if (spin.I) app.m3.spin.I++;
+  if (spin.N) app.m3.spin.N++;
+  if (spin.pitch && app.m3.spin.P === 0 && app.m3.spin.I === 0) {
+    app.m3.pitchedTooEarly = true;
+  }
+  // Отработка возражений (упоминания цифр/кейсов)
+  if (/ROI|окупа|кейс|% к чек|выручк|за \d+ месяц|по нашим данн|млн|тыс|клиент[оа]в|у нас есть|по статист|\+1[0-9]%/iu.test(text)) {
+    app.m3.objectionsHandled++;
+  }
+
+  // Показываем индикатор "Аскар печатает..." пока ждём ответ
+  const typingId = 'askar-typing-' + Date.now();
+  const log = document.getElementById('chatLog');
+  const typingEl = document.createElement('div');
+  typingEl.className = 'msg askar';
+  typingEl.id = typingId;
+  typingEl.innerHTML = '<em style="opacity:0.6">печатает...</em>';
+  log.appendChild(typingEl);
+  log.scrollIntoView({ block: 'end', behavior: 'smooth' });
+
+  // Пытаемся получить ответ от GPT, если ключ настроен
+  let reaction;
+  if (!app.m3.gptHistory) app.m3.gptHistory = [];
+  const gptReply = await callAskarGPT(text, app.m3.gptHistory);
+
+  if (gptReply) {
+    // GPT ответил — используем его реплику, лояльность считаем по SPIN-анализу
+    app.m3.gptHistory.push({ role: 'user', content: text });
+    app.m3.gptHistory.push({ role: 'assistant', content: gptReply });
+    // ограничиваем историю последними 20 сообщениями чтобы не разрастаться
+    if (app.m3.gptHistory.length > 20) {
+      app.m3.gptHistory = app.m3.gptHistory.slice(-20);
+    }
+    reaction = { text: gptReply, delta: estimateDelta(text, spin) };
+  } else {
+    // Fallback: локальная keyword-логика. Откатываем уже инкрементированные счётчики
+    // (processSeniorReply сделает свои инкременты).
+    if (spin.S) app.m3.spin.S--;
+    if (spin.P) app.m3.spin.P--;
+    if (spin.I) app.m3.spin.I--;
+    if (spin.N) app.m3.spin.N--;
+    reaction = processSeniorReply(text);
+  }
+
+  // Удаляем индикатор печати
+  const tip = document.getElementById(typingId);
+  if (tip) tip.remove();
+
+  app.m3.loyalty += reaction.delta;
+  app.m3.log.push({ turn: app.m3.turn, reply: text, delta: reaction.delta, gpt: !!gptReply });
+  updateLoyalty();
+  updateSpinMeter();
+  if (reaction.delta > 0) app.m3.correctChoices++;
+
+  addAskarMsg(reaction.text);
+  app.m3.turn++;
+  document.getElementById('m3Turn').textContent = app.m3.turn + 1;
+
+  if (app.m3.turn < 10) {
+    setTimeout(() => renderSeniorInput(), 600);
+  } else {
+    setTimeout(() => {
+      let closingMsg;
+      if (app.m3.loyalty >= 75) {
+        closingMsg = '*кивает* Хорошо, я понял суть. Пришлите расчёт по моему заведению на почту — посмотрю на конкретных цифрах. Спасибо за время.';
+      } else if (app.m3.loyalty >= 50) {
+        closingMsg = 'Понятно. Мне нужно подумать. Свяжитесь со мной на следующей неделе — обсудим подробнее.';
+      } else {
+        closingMsg = 'Мне это пока не очень интересно. Если будут конкретные кейсы по таким заведениям как у меня — пришлите. Спасибо.';
+      }
+      addAskarMsg(closingMsg);
+      setTimeout(finishRoleplay, 1500);
+    }, 800);
+  }
+}
+
+function finishRoleplay() {
+  const area = document.getElementById('answerArea');
+  area.innerHTML = `
+    <div style="text-align:center; padding: 20px;">
+      <div style="font-size: 13px; color: var(--text-mute); margin-bottom: 12px;">Ролевая завершена</div>
+      <button class="btn-primary" onclick="startModule4()">Перейти к ROI →</button>
+    </div>`;
+}
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 14. MODULE 4 — ROI Calculator                             │
+   └──────────────────────────────────────────────────────────┘ */
+function startModule4() {
+  app.m4 = { selected: new Set(), inputs: {}, defenseCorrect: 0, defenseDone: false, result: null };
+  showScreen('screen-m4');
+  renderProducts();
+  // привязка инпутов
+  ['roiChecks','roiAvg','roiTables','roiLoc','roiDig','roiDel','roiDelAvg','roiDelCom'].forEach(id => {
+    document.getElementById(id).addEventListener('input', recalcRoi);
+  });
+  recalcRoi();
+}
+
+function renderProducts() {
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = '';
+  PRODUCTS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'product-pick';
+    el.innerHTML = `
+      <div class="product-check">✓</div>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-meta">${p.meta}</div>
+      </div>
+      <div class="product-price">${fmtMoney(p.price)} / мес</div>
+    `;
+    el.onclick = () => {
+      if (app.m4.selected.has(p.id)) app.m4.selected.delete(p.id);
+      else app.m4.selected.add(p.id);
+      el.classList.toggle('is-on');
+      recalcRoi();
+    };
+    grid.appendChild(el);
+  });
+}
+
+function fmtMoney(n) {
+  return Math.round(n).toLocaleString('ru-RU') + ' тг';
+}
+
+function recalcRoi() {
+  const checks = +document.getElementById('roiChecks').value || 0;
+  const avg = +document.getElementById('roiAvg').value || 0;
+  const dig = (+document.getElementById('roiDig').value || 0) / 100;
+  const delCount = +document.getElementById('roiDel').value || 0;
+  const delAvg = +document.getElementById('roiDelAvg').value || 0;
+  const delCom = (+document.getElementById('roiDelCom').value || 0) / 100;
+
+  const baseDay = checks * avg;
+  const baseMonth = baseDay * 30;
+
+  // эффект от выбранных продуктов (только на оцифрованную часть гостей)
+  const sel = app.m4.selected;
+  let chequeMul = 1; // мультипликатор чека
+  let freqMul = 1;   // мультипликатор частоты/чеков
+  let revMul = 1;    // прямой мультипликатор выручки (Подтягивание)
+
+  if (sel.has('cashier')) chequeMul *= 1.16;
+  if (sel.has('waiter'))  { chequeMul *= 1.16; freqMul *= 1.30; }
+  if (sel.has('bill'))    revMul *= 1.08;
+  if (sel.has('loyalty')) { chequeMul *= 1.10; freqMul *= 1.15; }
+
+  // применяем мультипликаторы только на оцифрованную часть гостей (по умолчанию 30%)
+  const digitizedRev = baseDay * dig;
+  const otherRev = baseDay * (1 - dig);
+  const upliftedDay = digitizedRev * chequeMul * freqMul * revMul + otherRev;
+  const usMonth = upliftedDay * 30;
+
+  // доставка — экономия комиссии на 30% оборота агрегатора (которая переходит к нам)
+  let deliverySaving = 0;
+  if (sel.has('delivery')) {
+    deliverySaving = delCount * delAvg * delCom * 0.30; // переводим 30% оборота в SR Доставку
+  }
+
+  const usMonthTotal = usMonth + deliverySaving;
+  const extra = usMonthTotal - baseMonth;
+  const cost = [...sel].reduce((sum, id) => sum + PRODUCTS.find(p => p.id === id).price, 0);
+  const net = extra - cost;
+  const payback = cost > 0 && net > 0 ? (cost / net).toFixed(1) : '—';
+
+  document.getElementById('roiBaseDay').textContent = fmtMoney(baseDay);
+  document.getElementById('roiBaseMonth').textContent = fmtMoney(baseMonth);
+  document.getElementById('roiUsDay').textContent = fmtMoney(usMonthTotal / 30);
+  document.getElementById('roiUsMonth').textContent = fmtMoney(usMonthTotal);
+  document.getElementById('roiExtra').textContent = fmtMoney(extra);
+  document.getElementById('roiCost').textContent = fmtMoney(cost);
+  document.getElementById('roiNet').textContent = fmtMoney(net);
+  document.getElementById('roiPayback').textContent = (typeof payback === 'string' ? payback : payback + ' мес');
+  if (typeof payback === 'number' || /^[\d.]+$/.test(payback)) {
+    document.getElementById('roiPayback').textContent = payback + ' мес';
+  }
+
+  app.m4.result = { baseMonth, usMonth: usMonthTotal, extra, cost, net, payback, products: [...sel] };
+}
+
+/* ── Senior: Defense Quiz ── */
+document.getElementById('finishBtn').addEventListener('click', () => {
+  if (app.mode === 'senior' && !app.m4.defenseDone) {
+    document.getElementById('defenseBlock').style.display = 'block';
+    document.getElementById('finishBtn').style.display = 'none';
+    renderDefense(0);
+    document.getElementById('defenseBlock').scrollIntoView({ behavior: 'smooth' });
+  } else {
+    finishAll();
+  }
+});
+
+function renderDefense(idx) {
+  const area = document.getElementById('defenseArea');
+  area.innerHTML = '';
+  if (idx >= ROI_DEFENSE.length) {
+    app.m4.defenseDone = true;
+    area.innerHTML = `
+      <div style="text-align:center; padding: 16px;">
+        <div style="font-size: 14px; color: var(--text-mute); margin-bottom: 12px;">
+          Защита кейса завершена · средний балл ${Math.round((app.m4.defenseScoreSum || 0) / 3)} / 100
+        </div>
+        <button class="btn-primary" id="finishBtn2">Завершить и отправить →</button>
+      </div>
+    `;
+    document.getElementById('finishBtn2').onclick = finishAll;
+    return;
+  }
+  const q = ROI_DEFENSE[idx];
+  area.innerHTML = `
+    <div style="font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:var(--danger); margin-bottom:8px; font-weight:700;">
+      Защита ${idx + 1} / 3
+    </div>
+    <div class="defense-q"><strong>Аскар Мамытов:</strong> <em>${q.q}</em></div>
+    ${q.context ? `<div class="open-q-context">${q.context}</div>` : ''}
+    <textarea class="open-textarea" id="defTa" rows="5"
+      placeholder="Обоснуйте свой ответ. Минимум 50 символов."></textarea>
+    <div class="open-bar">
+      <span class="open-counter" id="defCnt">0 / 50</span>
+      <button class="btn-primary" id="defSend">Защищать →</button>
+    </div>
+    <div id="defEval"></div>
+  `;
+
+  const ta = document.getElementById('defTa');
+  const cnt = document.getElementById('defCnt');
+  const sendBtn = document.getElementById('defSend');
+  ta.addEventListener('input', () => {
+    const len = ta.value.trim().length;
+    cnt.textContent = len + ' / 50';
+    cnt.classList.toggle('is-ok', len >= 50);
+  });
+  ta.focus();
+
+  function submitDef(timeout) {
+    const text = ta.value.trim();
+    if (!timeout && text.length < 50) {
+      ta.classList.add('is-error');
+      setTimeout(() => ta.classList.remove('is-error'), 600);
+      return;
+    }
+    stopTimer();
+    ta.disabled = true;
+    sendBtn.disabled = true;
+
+    const evalRes = timeout && text.length < 15
+      ? { score: 0, verdict: 'weak', mustHit: [], mustMiss: q.rubric.must, plusHit: [], plusMiss: q.rubric.plus || [], redHit: [] }
+      : evalAnswer(text, q.rubric);
+
+    if (evalRes.verdict === 'strong') app.m4.defenseCorrect++;
+    app.m4.defenseScoreSum = (app.m4.defenseScoreSum || 0) + evalRes.score;
+    app.m4.defenseHistory = app.m4.defenseHistory || [];
+    app.m4.defenseHistory.push({
+      q: q.q, answer: text, score: evalRes.score, verdict: evalRes.verdict,
+      timeout: !!timeout
+    });
+
+    const verdictLabel = {
+      strong: '✓ Сильная защита',
+      partial: '~ Частично — Аскар думает',
+      weak: '✗ Слабая защита — сделка под угрозой'
+    }[evalRes.verdict];
+
+    const evalEl = document.getElementById('defEval');
+    evalEl.innerHTML = `
+      <div class="eval-result">
+        <div class="eval-header">
+          <span class="eval-verdict ${evalRes.verdict}">${verdictLabel}</span>
+          <span class="eval-score ${evalRes.verdict}">${evalRes.score} / 100</span>
+        </div>
+        ${timeout ? '<div style="font-size:13px; color:var(--danger); margin-bottom:14px;">⏱ Аскар не дождался ответа. «Время — деньги».</div>' : ''}
+        ${evalRes.mustHit.length ? `<div class="eval-group"><div class="eval-group-title">Закрыто</div><div class="concept-chips">${evalRes.mustHit.map(c => `<span class="concept hit">✓ ${c.name}</span>`).join('')}</div></div>` : ''}
+        ${evalRes.mustMiss.length ? `<div class="eval-group"><div class="eval-group-title">Пропущено</div><div class="concept-chips">${evalRes.mustMiss.map(c => `<span class="concept miss">✗ ${c.name}</span>`).join('')}</div></div>` : ''}
+        ${evalRes.plusHit.length ? `<div class="eval-group"><div class="eval-group-title">Бонусы</div><div class="concept-chips">${evalRes.plusHit.map(c => `<span class="concept hit">+ ${c.name}</span>`).join('')}</div></div>` : ''}
+        ${evalRes.redHit.length ? `<div class="eval-group"><div class="eval-group-title">Антипаттерны</div><div class="concept-chips">${evalRes.redHit.map(c => `<span class="concept red">− ${c.name}</span>`).join('')}</div></div>` : ''}
+        <div class="ideal-block">
+          <div class="ideal-title">Эталонный ответ</div>
+          <div class="ideal-text">${q.ideal}</div>
+        </div>
+        <div class="open-next">
+          <button class="btn-primary" id="defNext">Дальше →</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('defNext').onclick = () => renderDefense(idx + 1);
+    document.getElementById('defNext').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  sendBtn.onclick = () => submitDef(false);
+  ta.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') submitDef(false);
+  });
+  startTimer(90, () => submitDef(true));
+}
+
+/* ┌──────────────────────────────────────────────────────────┐
+   │ 15. FINAL SCREEN                                          │
+   └──────────────────────────────────────────────────────────┘ */
+function computeFinal() {
+  const m1Total = getQuestions(1).length;
+  const m2Total = getQuestions(2).length;
+
+  let m1Pct, m2Pct;
+  if (app.mode === 'senior') {
+    // средний score по открытым ответам
+    m1Pct = app.m1.scoreN ? app.m1.scoreSum / app.m1.scoreN : 0;
+  } else {
+    m1Pct = m1Total ? (app.m1.correct / m1Total) * 100 : 0;
+  }
+  // M2 всегда multi-select с F1-оценкой — для обоих режимов
+  m2Pct = app.m2.scoreN ? app.m2.scoreSum / app.m2.scoreN : 0;
+
+  // M4 — в Senior учитывается защита ROI, в Basic — простая проверка что выбран хоть один продукт
+  let m4Pct;
+  if (app.mode === 'senior') {
+    m4Pct = app.m4.defenseScoreSum ? app.m4.defenseScoreSum / 3 : 0;
+  } else {
+    m4Pct = app.m4.selected.size > 0 ? 100 : 0;
+  }
+
+  // M3 — единая формула для обоих режимов: SPIN-покрытие + лояльность Аскара
+  const spinCoverage = ((app.m3.spin.S > 0) + (app.m3.spin.P > 0) +
+                       (app.m3.spin.I > 0) + (app.m3.spin.N > 0)) / 4 * 100;
+  const m3Pct = spinCoverage * 0.6 + app.m3.loyalty * 0.4;
+
+  const overall = (m1Pct + m2Pct + m3Pct + m4Pct) / 4;
+
+  const passThreshold = app.mode === 'senior' ? 90 : 70;
+  const passed = overall >= passThreshold;
+
+  // зоны роста для senior
+  const gaps = [];
+  if (app.mode === 'senior') {
+    if (m1Pct < 70) gaps.push('Слабое знание продуктов и конкурентного позиционирования (Модуль 1, ' + Math.round(m1Pct) + '%). Не дожимаете ключевые концепты: скорость внедрения, TCO, единый стек.');
+    if (m2Pct < 70) gaps.push('Слабое сегментирование клиентов (Модуль 2, ' + Math.round(m2Pct) + '%) — продаёте «всем подряд» без учёта типа заведения.');
+    if (app.m3.spin.I === 0) gaps.push('Провал на этапе извлечения потребностей (Implication). Клиент не осознал реальных потерь — продажа держится на пустом месте.');
+    if (app.m3.spin.N === 0) gaps.push('Не дошли до направляющих вопросов (Need-payoff). Клиент не проговорил выгоду своими словами — высокий риск отказа.');
+    if (app.m3.pitchedTooEarly) gaps.push('Начали с презентации продукта вместо выявления потребностей — типовая ошибка джуниора.');
+    const objPct = app.m3.objectionsTotal === 0 ? 100 : (app.m3.objectionsHandled / app.m3.objectionsTotal) * 100;
+    if (objPct < 70) gaps.push('Слабая работа с возражениями — не подкрепляли ответы цифрами, кейсами, ROI.');
+    if (app.m1.timeouts + app.m2.timeouts >= 3) gaps.push('Падаете под давлением таймера. В реальном холодном звонке окно для ответа ещё короче.');
+    if (m4Pct < 67) gaps.push('Не смогли защитить ROI-кейс перед скептиком (Модуль 4, ' + Math.round(m4Pct) + '%). Цифры без обоснования = слив сделки.');
+  }
+
+  return {
+    mode: app.mode,
+    passed,
+    overall: Math.round(overall),
+    m1Pct: Math.round(m1Pct),
+    m2Pct: Math.round(m2Pct),
+    m3Pct: Math.round(m3Pct),
+    m4Pct: Math.round(m4Pct),
+    spinCoverage: Math.round(spinCoverage),
+    spin: { ...app.m3.spin },
+    loyalty: app.m3.loyalty,
+    timeouts: app.m1.timeouts + app.m2.timeouts,
+    objectionsHandled: app.m3.objectionsHandled,
+    objectionsTotal: app.m3.objectionsTotal,
+    gaps
+  };
+}
+
+function finishAll() {
+  showScreen('screen-final');
+  document.getElementById('finalLoading').classList.add('is-show');
+  document.getElementById('finalContent').style.display = 'none';
+
+  const result = computeFinal();
+  const payload = buildPayload(result);
+
+  sendToSheets(payload).finally(() => {
+    document.getElementById('finalLoading').classList.remove('is-show');
+    document.getElementById('finalContent').style.display = 'block';
+    renderFinal(result);
+  });
+}
+
+function buildPayload(r) {
+  return {
+    timestamp: new Date().toISOString(),
+    manager: app.managerName,
+    mode: r.mode,
+    overall: r.overall,
+    passed: r.passed,
+    m1Pct: r.m1Pct,
+    m2Pct: r.m2Pct,
+    m3Pct: r.m3Pct,
+    m4Pct: r.m4Pct,
+    m1Correct: app.m1.correct,
+    m1Total: getQuestions(1).length,
+    m1Timeouts: app.m1.timeouts,
+    m1AvgScore: app.m1.scoreN ? Math.round(app.m1.scoreSum / app.m1.scoreN) : null,
+    m2Correct: app.m2.correct,
+    m2Total: getQuestions(2).length,
+    m2Timeouts: app.m2.timeouts,
+    m2AvgScore: app.m2.scoreN ? Math.round(app.m2.scoreSum / app.m2.scoreN) : null,
+    finalLoyalty: r.loyalty,
+    spinS: r.spin.S,
+    spinP: r.spin.P,
+    spinI: r.spin.I,
+    spinN: r.spin.N,
+    spinCoverage: r.spinCoverage,
+    pitchedTooEarly: app.m3.pitchedTooEarly,
+    objectionsHandled: r.objectionsHandled,
+    objectionsTotal: r.objectionsTotal,
+    roiProducts: [...app.m4.selected].join('+'),
+    roiNetBenefit: app.m4.result ? Math.round(app.m4.result.net) : 0,
+    roiPayback: app.m4.result ? app.m4.result.payback : 0,
+    defenseStrongCount: app.m4.defenseCorrect,
+    defenseAvgScore: app.m4.defenseScoreSum ? Math.round(app.m4.defenseScoreSum / 3) : null,
+    jumpNavUsed: !!app.usedJumpNav,
+    gaps: r.gaps.join(' | ')
+  };
+}
+
+async function sendToSheets(payload) {
+  if (!SHEETS_URL || SHEETS_URL.includes('REPLACE_WITH_YOUR')) {
+    console.warn('[SR] Sheets URL не настроен. Payload:', payload);
+    return;
+  }
+  // защита от засорения таблицы тестовыми прогонами
+  if (payload.manager === 'Тестер' || payload.testRun) {
+    console.warn('[SR] Тестовый прогон — отправка в Sheets пропущена. Payload:', payload);
+    return;
+  }
+  try {
+    await fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch (e) {
+    console.error('[SR] Send failed:', e);
+  }
+}
+
+function renderFinal(r) {
+  const basic = document.getElementById('basicFinal');
+  const senior = document.getElementById('seniorFinal');
+  basic.innerHTML = '';
+  senior.innerHTML = '';
+
+  if (r.mode === 'basic') {
+    document.getElementById('finalSubText').textContent =
+      `${app.managerName}, ваш результат — ${r.overall}%. Все модули пройдены, данные отправлены в таблицу менеджера.`;
+    basic.innerHTML = `
+      <div class="basic-score">
+        <div class="basic-score-pct">${r.overall}%</div>
+        <div class="basic-score-label">Итоговый результат · ${r.passed ? 'Пройдено ✓' : 'Не пройдено'}</div>
+        <div class="divider"></div>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align:center; font-size: 13px;">
+          <div><div class="muted">Продукты</div><strong>${r.m1Pct}%</strong></div>
+          <div><div class="muted">Сегменты</div><strong>${r.m2Pct}%</strong></div>
+          <div><div class="muted">Ролевая</div><strong>${r.m3Pct}%</strong></div>
+          <div><div class="muted">ROI</div><strong>${r.m4Pct}%</strong></div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // SENIOR
+  document.getElementById('finalSubText').textContent =
+    r.passed
+      ? `${app.managerName}, вы подтвердили уровень Senior с результатом ${r.overall}%. Готовы работать со сложной B2B-базой.`
+      : `${app.managerName}, до Senior-порога 90% не дотянули — ${r.overall}%. Ниже разбор зон роста.`;
+
+  const card = document.createElement('div');
+  card.className = 'senior-final ' + (r.passed ? 'pass' : 'fail');
+  card.innerHTML = `
+    <div class="senior-final-head">
+      <span class="senior-badge">${r.passed ? '✓ SENIOR PASSED' : '✗ SENIOR FAILED'}</span>
+      <span class="senior-pct">${r.overall}%</span>
+    </div>
+    <div class="senior-status">
+      ${r.passed
+        ? 'Уровень Senior подтверждён. Можете брать сложных ЛПР и холодную базу.'
+        : `Текущий результат: ${r.overall}%. Порог для Senior — 90%.`}
+    </div>
+
+    <div class="breakdown">
+      <div class="bd-row">
+        <span class="bd-name">Продукты</span>
+        <div class="bd-bar"><div class="bd-bar-fill" style="width:${r.m1Pct}%"></div></div>
+        <span class="bd-val">${r.m1Pct}%</span>
+      </div>
+      <div class="bd-row">
+        <span class="bd-name">Сегменты</span>
+        <div class="bd-bar"><div class="bd-bar-fill" style="width:${r.m2Pct}%"></div></div>
+        <span class="bd-val">${r.m2Pct}%</span>
+      </div>
+      <div class="bd-row">
+        <span class="bd-name">Ролевая (SPIN)</span>
+        <div class="bd-bar"><div class="bd-bar-fill" style="width:${r.m3Pct}%"></div></div>
+        <span class="bd-val">${r.m3Pct}%</span>
+      </div>
+      <div class="bd-row">
+        <span class="bd-name">Защита ROI</span>
+        <div class="bd-bar"><div class="bd-bar-fill" style="width:${r.m4Pct}%"></div></div>
+        <span class="bd-val">${r.m4Pct}%</span>
+      </div>
+    </div>
+
+    <div class="spin-summary">
+      <div class="spin-summary-title">SPIN-покрытие: ${r.spinCoverage}%</div>
+      <div class="spin-pills">
+        <span class="spin-pill ${r.spin.S ? 'on' : ''}">Ситуационные · ${r.spin.S}</span>
+        <span class="spin-pill ${r.spin.P ? 'on' : ''}">Проблемные · ${r.spin.P}</span>
+        <span class="spin-pill ${r.spin.I ? 'on' : ''}">Извлекающие · ${r.spin.I}</span>
+        <span class="spin-pill ${r.spin.N ? 'on' : ''}">Направляющие · ${r.spin.N}</span>
+      </div>
+    </div>
+
+    ${r.gaps.length ? `
+      <div class="gaps">
+        <div class="gaps-title">Зоны роста</div>
+        ${r.gaps.map(g => `<div class="gap">${g}</div>`).join('')}
+      </div>
+    ` : ''}
+  `;
+  senior.appendChild(card);
+}
+</script>
+</body>
+</html>
